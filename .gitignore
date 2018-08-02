@@ -5,3 +5,4 @@
 /runtime/*
 /thinkphp/*
 .DS_Store
+error.log
