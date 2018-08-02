@@ -55,26 +55,4 @@ class ExceptionHandler extends Handle
         ];
         return json($result, $this->code);
     }
-
-    /*
-     * 将异常写入日志
-     */
-    private function recordErrorLog(Exception $e)
-    {
-        Log::init([
-            'type'  =>  'File',
-            'path'  =>  LOG_PATH,
-            'level' => ['error']
-        ]);
-
-        $error['file_path']=$e->getFile();
-        $error['error_line']=$e->getLine();
-        $error['error_msg']=$e->getMessage();
-
-        $error['ip'] = request()->ip();
-        $error['error_time']= time();
-        $connect=Db::connect('error_data');
-        $res=$connect->table('jn_error_log')->insert($error);
-        Log::record($e->getMessage(),'error');
-    }
 }

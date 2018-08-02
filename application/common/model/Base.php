@@ -29,6 +29,12 @@ class Base extends Model{
     protected $count = 10;
 
     /**
+     * 数据条数,默认十条数据
+     * @var int
+     */
+    protected $limit = 10;
+
+    /**
      * 排序
      * @var string
      */
@@ -80,9 +86,12 @@ class Base extends Model{
         $this->page      = $this->model_arr['@page'];
 
         // 限制条数
-        if($this->model_arr['@count'] != ''){
-            $this->count = $this->model_arr['@count'];
+        if($this->model_arr['@limit'] != ''){
+            $this->limit = $this->model_arr['@limit'];
         }
+
+        // 获取总数
+        $this->count = $this->model_arr['@count'];
         
         // 排序
         $this->order     = $this->model_arr['@order'];
@@ -147,7 +156,6 @@ class Base extends Model{
                         ->with($this->with)
                         ->where($this->where)
                         ->order($this->order)
-                        //->fetchSql()
                         ->find();
     }
 
@@ -159,13 +167,24 @@ class Base extends Model{
      */
     public function findAll(){
         return $this->field($this->allowed_field)
-                        ->with($this->with)
-                        ->where($this->where)
-                        ->page($this->page)
-                        ->limit($this->count)
-                        ->order($this->order)
-                        //->fetchSql(true)                          
-                        ->select();
+                    ->with($this->with)
+                    ->where($this->where)
+                    ->page($this->page)
+                    ->limit($this->limit)
+                    ->order($this->order)                        
+                    ->select();
+    }
+
+    /**
+     * 获取总数量
+     * @access public
+     * @param  array
+     * @return
+     */
+    public function getCount(){
+        return $this->with($this->with)
+                    ->where($this->where)
+                    ->count($this->count);
     }
 
 

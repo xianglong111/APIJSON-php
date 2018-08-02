@@ -9,12 +9,12 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-Route::post('get', 'index/index/get');
-
-Route::post('post', 'index/index/post');
-
-Route::post('delete', 'index/index/delete');
-
+Route::post('get', 'index/home/get');
+Route::post('post', 'index/home/post');
+Route::post('delete', 'index/home/delete');
+Route::post('count', 'index/home/count');
+Route::post('gets', 'index/home/gets');
+Route::post('posts', 'index/home/posts');
 return [
 
 ];

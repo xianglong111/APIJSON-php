@@ -2,10 +2,10 @@
 namespace app\index\controller;
 use app\lib\json\JsonParser;
 
-class Index
+class Home
 {
-    // Json数据对象
-    private $json_arr;
+    // 结果对象
+    private $data;
     /* 
     * 检查json格式是否正确
     */
@@ -14,37 +14,33 @@ class Index
         if(is_null($json_arr)){            
            exception('数据格式错误');
         }else{
-           $this->json_arr = $json_arr;
+           $this->data = JsonParser::run($json_arr,request()->action());
         }
      }
     
     public function get()
     {
-        return show(200,'success',JsonParser::run($this->json_arr,'get'));
+        return show(200,'success',$this->data);
     }    
 
-    public function head(){
-        return show(200,'success',JsonParser::run($this->json_arr,'head'));
+    public function count(){
+        return show(200,'success',$this->data);
     }
 
     public function gets(){
-        return show(200,'success',JsonParser::run($this->json_arr,'gets'));
+        return show(200,'success',$this->data);
     }
 
     public function post(){
-        return show(200,'success',JsonParser::run($this->json_arr,'post'));
+        return show(200,'success',$this->data);
     }
 
     public function posts(){
-        return show(200,'success',JsonParser::run($this->json_arr,'posts'));
+        return show(200,'success',$this->data);
     }
-
 
     public function delete(){
-        return show(200,'success',JsonParser::run($this->json_arr,'delete'));
+        return show(200,'success',$this->data);
     }
-
-
-
 }
 

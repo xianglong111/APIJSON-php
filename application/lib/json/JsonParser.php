@@ -11,6 +11,7 @@ class JsonParser{
         '@where'=>'',
         '@field'=>'',
         '@page'=>'',
+        '@limit'=>'',
         '@count'=>'',
         '@order'=>'',
         '@with'=>'',
@@ -42,7 +43,7 @@ class JsonParser{
             // 设置模型名称
             $model_arr['table']  = str_replace('[]','',$model_name);
             // 判断是否为数组
-            $model_arr['is_arr'] = strpos($model_name,'[]')===false;
+            $model_arr['is_arr'] = strpos($model_name,'[]')!==false;
 
             if(is_array($model_field)){                             
                 foreach ($model_field as $model_child_name => $model_child) {
@@ -57,16 +58,19 @@ class JsonParser{
                 }
             }
             // 实例化模型
-            $model = app()->model($model_arr['table']);
+            $model = model($model_arr['table']);
             $model->initData($model_arr);
-            $data[$model_name] = $model_arr['is_arr']?$model->findOne():$model->findAll();
+            $data[$model_name] = $model_arr['is_arr']?$model->findAll():$model->findOne();
+            // 获取总数
+            if($model_arr['is_arr'] && $model_arr['@count'] != ''){
+                $data[$model_arr['table'].".count"] = $model->getCount();
+            }
         }
         return $data;
     }
 
-
     /**
-     * 添加数据
+     * 修改添加数据
      * @access public
      * @param  array json_arr json数组
      * @return array
