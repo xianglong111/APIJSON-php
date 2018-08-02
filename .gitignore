@@ -4,3 +4,4 @@
 /vendor/*
 /runtime/*
 /thinkphp/*
+.DS_Store
