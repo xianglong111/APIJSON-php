@@ -6,9 +6,6 @@ class Home
 {
     // 结果对象
     private $data;
-    /* 
-    * 检查json格式是否正确
-    */
     public function __construct(){
         $json_arr = json_decode(file_get_contents("php://input"),true);
         if(is_null($json_arr)){            
@@ -20,10 +17,6 @@ class Home
     
     public function get()
     {
-        return show(200,'success',$this->data);
-    }    
-
-    public function count(){
         return show(200,'success',$this->data);
     }
 
