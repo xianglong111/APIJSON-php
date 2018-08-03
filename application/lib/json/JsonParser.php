@@ -127,6 +127,4 @@ class JsonParser{
         }
         return $data;
     }
-
-    
 }

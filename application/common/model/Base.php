@@ -187,7 +187,16 @@ class Base extends Model{
                     ->count($this->count);
     }
 
-
+    /**
+     * 执行模型方法
+     * @access public
+     * @param  string
+     * @param  array
+     * @return
+     */
+    public function exeFun($fun_name,$data){
+        return call_user_func_array([$this,$fun_name],[$data]);
+    }
 
 
 }
