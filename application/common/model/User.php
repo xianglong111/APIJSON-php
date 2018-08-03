@@ -24,5 +24,28 @@ class User extends BaseModel{
     ];
 
 
+    /**
+     * 用户登陆
+     * @access public
+     * @param 
+     * @return 
+     */
+    public function login($data){
 
+        
+        return $data;
+
+    } 
+
+    /**
+     * 用户注册
+     * @access public
+     * @param 
+     * @return 
+     */
+    public function register(){
+
+
+
+    }
 }

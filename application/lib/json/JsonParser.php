@@ -38,33 +38,49 @@ class JsonParser{
     private static function get($json_arr){
         $data = [];            
         foreach ($json_arr as $model_name => $model_field) {   
-            // 关键词，先定义避免出现索引不存在的情况
-            $model_arr = self::$conditions;
+            
             // 设置模型名称
-            $model_arr['table']  = str_replace('[]','',$model_name);
+            $table_name  = $model_name;
             // 判断是否为数组
-            $model_arr['is_arr'] = strpos($model_name,'[]')!==false;
+            $is_arr = strpos($model_name,'[]')!==false;
+            if($is_arr) $table_name  = str_replace('[]','',$model_name);
+            // 判断是否为方法
+            $is_fun = strpos($model_name,'.')!==false;
+            if($is_fun) $table_name  = explode('.',$model_name);
+
+            // 关键词，先定义避免出现索引不存在的情况
+            $model_arr = $is_fun?[]:self::$conditions;
 
             if(is_array($model_field)){                             
                 foreach ($model_field as $model_child_name => $model_child) {
-                    if(strpos($model_child_name,'@') === false){
+
+                    $is_field = strpos($model_child_name,'@') !== false;
+                    if($is_fun||$is_field){
+                        $model_arr[$model_child_name]  = $model_child;
+                    }else{
                         $model_arr['with'][$model_child_name] = '';
                         foreach($model_child as $key=>$field){
                             if($key == "@field")$model_arr['with'][$model_child_name] = $field;
                         }
-                    }else{
-                        $model_arr[$model_child_name]  = $model_child;
                     }
+
                 }
             }
             // 实例化模型
-            $model = model($model_arr['table']);
-            $model->initData($model_arr);
-            $data[$model_name] = $model_arr['is_arr']?$model->findAll():$model->findOne();
-            // 获取总数
-            if($model_arr['is_arr'] && $model_arr['@count'] != ''){
-                $data[$model_arr['table'].".count"] = $model->getCount();
+            if($is_fun){
+                $model = model($table_name[0]);
+                // 获取方法名称
+                $data = $model->exeFun($table_name[1],$model_arr);
+            }else{
+                $model = model($table_name);
+                $model->initData($model_arr);
+                $data[$model_name] = $is_arr?$model->findAll():$model->findOne();
+                // 获取总数
+                if($is_arr && $model_arr['@count'] != ''){
+                    $data[$table_name.".count"] = $model->getCount();
+                }
             }
+
         }
         return $data;
     }

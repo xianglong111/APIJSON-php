@@ -29,8 +29,6 @@ class News extends BaseModel{
         'create_time'
     ];
 
-    // initialize
-
     /**
      * 关联模型：NewsDetail
      * @access public
