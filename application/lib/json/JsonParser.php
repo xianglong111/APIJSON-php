@@ -1,6 +1,11 @@
 <?php
 namespace app\lib\json;
-
+/***
+ * 新功能
+ * 1、数据验证
+ * 2、访问权限功能
+ * 
+  */
 class JsonParser{
 
     /**
@@ -21,10 +26,10 @@ class JsonParser{
             // 判断是否为方法
             $is_fun = strpos($model_name,'.')!==false;
             $action_name = '';
-            if( $is_fun )list($table_name,$action_name) = explode('.',$table_name);
+            if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
             // 实例化模型
             $model = model($table_name);
-            if($handle_type != 'post')$model_arr = $model->initData($model_field);
+            $model_arr = $model->initData($model_field);
             // 执行自定义方法
             if( $is_fun ) {
                 $data[$model_name] = $model->exeFun($action_name,$model_arr);
@@ -36,15 +41,11 @@ class JsonParser{
                     if($is_arr && array_key_exists('count',$model_arr)){
                         $data[$table_name.".count"] = $model->getCount();
                     }
-                }
-                // 新增和修改
-                if($handle_type == 'post'){
-                    // 不是数组
-                    if(!$is_arr) $model_field[] = $model_field;
-                    $data[$model_name]['result'] = $model->allowField($model->allowed_field)->saveAll($model_field) !== false;
-                }
-                // 删除数据
-                if($handle_type == 'delete'){
+                }elseif($handle_type == 'post'){
+                    // 新增和修改
+                    $data[$model_name]['result'] = $model->updateAll($model_arr,$is_arr);
+                }elseif($handle_type == 'delete'){
+                    // 删除数据
                     if(empty($model_arr))exception('缺少必要的参数');
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
                 }

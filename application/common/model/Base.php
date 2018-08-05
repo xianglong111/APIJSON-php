@@ -47,6 +47,12 @@ class Base extends Model{
     protected $with = [];
 
     /**
+     * 是否为更新
+     * @var bool
+     */
+    protected $isUpdate = false;
+
+    /**
      * 初始化数据
      * @access public
      * @param  array|object $data 数据
@@ -55,6 +61,13 @@ class Base extends Model{
         $model_arr = [];
         if(is_array($model_field)){                         
             foreach ($model_field as $model_child_name => $model_child) {
+
+                if(strpos($model_child_name,'@') !== false){ // 是否为更新数据，有@字段
+                    $model_arr[str_replace('@','',$model_child_name)] = $model_child;
+                    $this->isUpdate = true;
+                    continue;
+                }
+
                 // 是否为字段，判断标准为是否为数组
                 $is_field = !is_array($model_field[$model_child_name]);
                 if($is_field){
@@ -194,6 +207,23 @@ class Base extends Model{
         return call_user_func_array([$this,$fun_name],[$data]);
     }
 
+
+    /**
+     * 修改记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateAll($data,$is_arr=false)
+    {
+        if(empty($data))return false;
+
+        if($is_arr){
+            return $this->allowField($this->allowed_field)->saveAll($data) !== false;
+        }else{
+            return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+        }
+    }
 
     /**
      * 删除记录
