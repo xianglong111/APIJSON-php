@@ -27,9 +27,12 @@ class JsonParser{
             $is_fun = strpos($model_name,'.')!==false;
             $action_name = '';
             if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
+            
             // 实例化模型
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
+            if(empty($model_arr))exception('缺少必要的参数');
+
             // 执行自定义方法
             if( $is_fun ) {
                 $data[$model_name] = $model->exeFun($action_name,$model_arr);
@@ -41,12 +44,9 @@ class JsonParser{
                     if($is_arr && array_key_exists('count',$model_arr)){
                         $data[$table_name.".count"] = $model->getCount();
                     }
-                }elseif($handle_type == 'post'){
-                    // 新增和修改
+                }elseif($handle_type == 'post'){ // 新增和修改
                     $data[$model_name]['result'] = $model->updateAll($model_arr,$is_arr);
-                }elseif($handle_type == 'delete'){
-                    // 删除数据
-                    if(empty($model_arr))exception('缺少必要的参数');
+                }elseif($handle_type == 'delete'){ // 删除数据
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
                 }
             }  

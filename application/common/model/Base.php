@@ -186,6 +186,43 @@ class Base extends Model{
     }
 
     /**
+     * 新增修改记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateAll($data,$is_arr=false)
+    {
+        if($is_arr){
+            return $this->allowField($this->allowed_field)->saveAll($data) !== false;
+        }else{
+            return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+        }
+    }
+
+    /**
+     * 删除记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function deleteAll($data)
+    {
+        $resultSet = $this->select($data);
+        
+        if (count($resultSet) === 0){
+            return false;
+        }else{
+            foreach ($resultSet as $data) {
+                $rs = $data->delete();
+                if($rs === false) return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * 获取总数量
      * @access public
      * @return int
@@ -205,50 +242,6 @@ class Base extends Model{
      */
     public function exeFun($fun_name,$data){
         return call_user_func_array([$this,$fun_name],[$data]);
-    }
-
-
-    /**
-     * 修改记录
-     * @access public
-     * @param  mixed $data 主键列表 支持闭包查询条件
-     * @return bool
-     */
-    public function updateAll($data,$is_arr=false)
-    {
-        if(empty($data))return false;
-
-        if($is_arr){
-            return $this->allowField($this->allowed_field)->saveAll($data) !== false;
-        }else{
-            return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
-        }
-    }
-
-    /**
-     * 删除记录
-     * @access public
-     * @param  mixed $data 主键列表 支持闭包查询条件
-     * @return bool
-     */
-    public function deleteAll($data)
-    {
-        if (empty($data) && 0 !== $data) {
-            return false;
-        }
-
-        $resultSet = $this->select($data);
-        
-        if (count($resultSet) === 0){
-            return false;
-        }else{
-            foreach ($resultSet as $data) {
-                $rs = $data->delete();
-                if($rs === false) return false;
-            }
-        }
-
-        return true;
     }
 
 }
