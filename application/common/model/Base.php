@@ -51,10 +51,25 @@ class Base extends Model{
      * @access public
      * @param  array|object $data 数据
      */
-    public function initData($model_arr){
+    public function initData($model_field){
+        $model_arr = [];
+        if(is_array($model_field)){                         
+            foreach ($model_field as $model_child_name => $model_child) {
+                // 是否为字段，判断标准为是否为数组
+                $is_field = !is_array($model_field[$model_child_name]);
+                if($is_field){
+                    $model_arr[$model_child_name]  = $model_child;
+                }else{
+                    $model_arr['with'][$model_child_name] = "";
+                    foreach($model_child as $key=>$field){
+                        $model_arr['with'][$model_child_name] = $field;
+                    }
+                }
+            }
+        }
         // 验证参数
         $this->checkParams($model_arr);
-
+        return $model_arr;
     }
 
     /**
@@ -63,6 +78,9 @@ class Base extends Model{
      * @param  array|object $model_arr 模型数组，包含（table、field、page、count等）
      */
     protected function checkParams($model_arr){
+
+        if(empty($model_arr)) return;
+
         // 检测查询字段是否有权限
         if(array_key_exists('field',$model_arr)){
             $this->allowed_field = $this->checkFieldAllowed($model_arr['field'], $this->allowed_field); 
@@ -122,6 +140,9 @@ class Base extends Model{
         }
     }
 
+
+
+
     /**
      * 查询单条数据
      * @access public
@@ -147,7 +168,7 @@ class Base extends Model{
                     ->page($this->page)
                     ->limit($this->limit)
                     ->order($this->order)
-                    ->fetchSql(true)                      
+                    //->fetchSql(true)                      
                     ->select();
     }
 
@@ -173,5 +194,31 @@ class Base extends Model{
         return call_user_func_array([$this,$fun_name],[$data]);
     }
 
+
+    /**
+     * 删除记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function deleteAll($data)
+    {
+        if (empty($data) && 0 !== $data) {
+            return false;
+        }
+
+        $resultSet = $this->select($data);
+        
+        if (count($resultSet) === 0){
+            return false;
+        }else{
+            foreach ($resultSet as $data) {
+                $rs = $data->delete();
+                if($rs === false) return false;
+            }
+        }
+
+        return true;
+    }
 
 }
