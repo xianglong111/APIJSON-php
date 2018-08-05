@@ -47,84 +47,61 @@ class Base extends Model{
     protected $with = [];
 
     /**
-     * 模型数组
-     * @var array
-     */
-    public $model_arr = '';
-
-
-   
-    /**
      * 初始化数据
      * @access public
      * @param  array|object $data 数据
      */
     public function initData($model_arr){
-
-        $this->model_arr = $model_arr;
         // 验证参数
-        $this->checkParams();
+        $this->checkParams($model_arr);
 
     }
 
     /**
      * 检测参数正确性
      * @access public
-     * @param  array|object $this->model_arr 模型数组，包含（table、field、page、count等）
+     * @param  array|object $model_arr 模型数组，包含（table、field、page、count等）
      */
-    private $relation_model;
-    protected function checkParams(){
+    protected function checkParams($model_arr){
         // 检测查询字段是否有权限
-        if($this->model_arr['@field'] != ''){
-            $this->allowed_field = $this->checkFieldAllowed($this->model_arr['@field'], $this->allowed_field); 
+        if(array_key_exists('field',$model_arr)){
+            $this->allowed_field = $this->checkFieldAllowed($model_arr['field'], $this->allowed_field); 
         }
 
         // 条件语句
-        $this->where = $this->model_arr['@where'];
+        if(array_key_exists('where',$model_arr))$this->where = $model_arr['where'];
 
         // 分页
-        $this->page      = $this->model_arr['@page'];
+        if(array_key_exists('page',$model_arr))$this->page   = $model_arr['page'];
 
         // 限制条数
-        if($this->model_arr['@limit'] != ''){
-            $this->limit = $this->model_arr['@limit'];
+        if(array_key_exists('limit',$model_arr)){
+            $this->limit = $model_arr['limit'];
         }
 
         // 获取总数
-        $this->count = $this->model_arr['@count'];
+        if(array_key_exists('count',$model_arr))$this->count = $model_arr['count'];
         
         // 排序
-        $this->order     = $this->model_arr['@order'];
+        if(array_key_exists('order',$model_arr))$this->order  = $model_arr['order'];
 
-        // 关联模型 输入参数：model1:field1,field2;model2:field1,field2
-        //         输出结果：[ model1=>'field1,field2' , model2=>'field1,field2' ]
-        if($this->model_arr['@with'] != ''){
-            $relation_model_arr = explode(';',$this->model_arr['@with']);
-            // 确定数据正确性
-            if(is_array($relation_model_arr)){
-                foreach($relation_model_arr as $k=>$relation_model){
-                    $relation_model  = explode(':',$relation_model);
-                    $this->with[$relation_model[0]] = function($query) use ($relation_model){
-                        $query->withField($relation_model[1]);
-                    };
-                }
-            }
-        }
-
-        if($this->model_arr['with'] != ''){
-            if(is_array($this->model_arr['with'])){
+        // 关联模型 输入参数:['model'=>'field1,field2,field3']
+        if(array_key_exists('with',$model_arr)){
+            if(is_array($model_arr['with'])){
                 $this->with = [];
-                foreach($this->model_arr['with'] as $model_name=>$field){
+                foreach($model_arr['with'] as $model_name=>$field){
                     // 检测字段是否有权限
                     $model = model($model_name);
                     $field = $this->checkFieldAllowed($field,$model->allowed_field);
-                    $this->with[$model_name] = function($query) use ($field){
+                    $this->with[$model_name] = function($query) use ($field,$model_name){
                         $query->withField($field);
                     };
                 }
             }
         }
     }
+
+
 
     /**
      * 检查字段是否允许操作
@@ -148,8 +125,7 @@ class Base extends Model{
     /**
      * 查询单条数据
      * @access public
-     * @param  array
-     * @return
+     * @return array
      */
     public function findOne(){
         return $this->field($this->allowed_field)
@@ -162,8 +138,7 @@ class Base extends Model{
     /**
      * 查询多条数据
      * @access public
-     * @param  array
-     * @return
+     * @return array
      */
     public function findAll(){
         return $this->field($this->allowed_field)
@@ -171,15 +146,15 @@ class Base extends Model{
                     ->where($this->where)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order)                        
+                    ->order($this->order)
+                    ->fetchSql(true)                      
                     ->select();
     }
 
     /**
      * 获取总数量
      * @access public
-     * @param  array
-     * @return
+     * @return int
      */
     public function getCount(){
         return $this->with($this->with)
@@ -188,10 +163,10 @@ class Base extends Model{
     }
 
     /**
-     * 执行模型方法
+     * 执行模型自定义方法
      * @access public
-     * @param  string
-     * @param  array
+     * @param  string fun_name 方法名
+     * @param  array  data 参数
      * @return
      */
     public function exeFun($fun_name,$data){
