@@ -18,3 +18,19 @@ function show($status , $message , $data = [] , $httpCode=200) {
     $httpCode = 200;
     return json($data , $httpCode);
 }
+
+/**
+ * 获取UID
+ */
+function getUid(){
+    $token = request()->header('token');
+    // 不存在token
+    if(is_null($token)){
+        return false;
+    }
+    $uid = cache($token);
+    if(is_null($uid)) {
+        return false;
+    }
+    return $uid;
+}

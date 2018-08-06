@@ -1,6 +1,6 @@
 
 /vendor/*
-/config/*
+database.php
 /vendor/*
 /runtime/*
 /thinkphp/*

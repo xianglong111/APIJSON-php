@@ -29,10 +29,9 @@ class JsonParser{
             if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
             
             // 实例化模型
-            
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
-            if(empty($model_arr))exception('缺少必要的参数');
+            if(!empty($model_field)&&empty($model_arr))abort('缺少必要的参数');
 
             // 执行自定义方法
             if( $is_fun ) {

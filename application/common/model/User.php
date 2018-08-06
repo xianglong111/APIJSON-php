@@ -37,11 +37,12 @@ class User extends BaseModel{
      * @return 
      */
     public function login($data){
-
+        $uid = getUid();
+        if($uid !== false) abort(302, '已登录');
+        $uid = 1;
         
-        
-        return $data;
-
+        $user['token'] = $this->token($uid);
+        return $user;
     } 
 
     /**
@@ -54,5 +55,17 @@ class User extends BaseModel{
 
 
 
+    }
+
+    /**
+     * 生成token
+     * uid+密钥+时间戳 有效时间15分钟
+     * @param $uid int
+     * @return $token string 
+     */
+    private function token($uid){
+        $token = md5($uid.config('user.secret_key').time());
+        cache($token,$uid,900);
+        return $token;
     }
 }

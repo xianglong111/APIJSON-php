@@ -7,13 +7,17 @@ class Home
     // 结果对象
     private $data;
     public function __construct(){
+        $this->init();
+    }
+
+    private function init(){
         $json_arr = json_decode(request()->getInput(),true);
         if(is_null($json_arr)){      
            exception('数据格式错误');
         }else{
            $this->data = JsonParser::run($json_arr,request()->action());
         }
-     }
+    }
     
     public function get()
     {
