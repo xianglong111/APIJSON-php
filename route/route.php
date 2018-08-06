@@ -12,7 +12,6 @@
 Route::post('get', 'index/home/get')->allowCrossDomain();
 Route::post('post', 'index/home/post')->allowCrossDomain();
 Route::post('delete', 'index/home/delete')->allowCrossDomain();
-Route::post('count', 'index/home/count')->allowCrossDomain();
 Route::post('gets', 'index/home/gets')->allowCrossDomain();
 Route::post('posts', 'index/home/posts')->allowCrossDomain();
 return [

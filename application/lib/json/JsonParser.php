@@ -48,8 +48,19 @@ class JsonParser{
                     $data[$model_name]['result'] = $is_arr?$model->updateAll($model_arr):$model->updateOne($model_arr);
                 }elseif($handle_type == 'delete'){ // 删除数据
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
-                }
-            }  
+                }else{
+                    $uid = $model->getUid();
+                    if($handle_type == 'gets'){
+                        $data[$model_name] = $is_arr?$model->findAlls($uid):$model->findOnes($uid);
+                        // 获取总数
+                        if($is_arr && array_key_exists('count',$model_arr)){
+                            $data[$table_name.".count"] = $model->getCounts($uid);
+                        }
+                    }elseif($handle_type == 'posts'){
+                        $data[$model_name]['result'] = $is_arr?$model->updateAlls($model_arr,$uid):$model->updateOnes($model_arr,$uid);
+                    }
+                }  
+            }
         }
         return $data;
     }

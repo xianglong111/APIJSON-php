@@ -53,6 +53,12 @@ class Base extends Model{
     protected $isUpdate = false;
 
     /**
+     * uid字段名
+     * @var string
+     */
+    protected $uid_name = 'uid';
+
+    /**
      * 初始化数据
      * @access public
      * @param  array|object $data 数据
@@ -157,6 +163,18 @@ class Base extends Model{
     }
 
     /**
+     * 检测token
+     * @access public
+     * @return array
+     */
+    public function getUid(){
+        $uid = getUid();
+        if($uid === false) exception('没有相关权限或超时，请您重新登录！');
+        return $uid;
+    }
+
+
+    /**
      * 查询单条数据
      * @access public
      * @return array
@@ -185,6 +203,36 @@ class Base extends Model{
     }
 
     /**
+     * 验证token查询单条数据
+     * @access public
+     * @return array
+     */
+    public function findOnes($uid){
+        return $this->field($this->allowed_field)
+                        ->with($this->with)
+                        ->where($this->where)
+                        ->where($this->uid_name,$uid)
+                        ->order($this->order)
+                        ->find();
+    }
+
+    /**
+     * 验证token查询多条数据
+     * @access public
+     * @return array
+     */
+    public function findAlls($uid){
+        return $this->field($this->allowed_field)
+                    ->with($this->with)
+                    ->where($this->where)
+                    ->where($this->uid_name,$uid)
+                    ->page($this->page)
+                    ->limit($this->limit)
+                    ->order($this->order)                 
+                    ->select();
+    }
+
+    /**
      * 新增修改一条记录
      * @access public
      * @param  mixed $data 主键列表 支持闭包查询条件
@@ -206,6 +254,30 @@ class Base extends Model{
     {
         return $this->allowField($this->allowed_field)->saveAll($data) !== false;
     }
+
+    /**
+     * 验证token新增修改一条记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateOnes($data,$uid)
+    {
+        return $this->allowField($this->allowed_field)->where($this->uid_name,$uid)->isUpdate($this->isUpdate)->save($data) !== false;
+        
+    }
+
+    /**
+     * 验证token新增修改多条记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateAlls($data,$uid)
+    {
+        return $this->allowField($this->allowed_field)->where($this->uid_name,$uid)->saveAll($data) !== false;
+    }
+
 
     /**
      * 删除记录
@@ -237,6 +309,18 @@ class Base extends Model{
     public function getCount(){
         return $this->with($this->with)
                     ->where($this->where)
+                    ->count($this->count);
+    }
+
+    /**
+     * 获取总数量
+     * @access public
+     * @return int
+     */
+    public function getCounts($uid){
+        return $this->with($this->with)
+                    ->where($this->where)
+                    ->where($this->uid_name,$uid)
                     ->count($this->count);
     }
 

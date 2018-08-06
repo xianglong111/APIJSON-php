@@ -59,13 +59,13 @@ class User extends BaseModel{
 
     /**
      * 生成token
-     * uid+密钥+时间戳 有效时间15分钟
+     * uid+密钥+时间戳 有效时间10分钟
      * @param $uid int
      * @return $token string 
      */
     private function token($uid){
-        $token = md5($uid.config('user.secret_key').time());
-        cache($token,$uid,900);
+        $token = md5($uid.config('token.secret_key').time());
+        cache($token,$uid,config('token.pc_expiry_time'));
         return $token;
     }
 }
