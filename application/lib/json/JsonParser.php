@@ -32,7 +32,7 @@ class JsonParser{
             
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
-            if(empty($model_arr))exception('缺少必要的参数');
+            if(!empty($model_field) && empty($model_arr))exception('缺少必要的参数');
 
             // 执行自定义方法
             if( $is_fun ) {
