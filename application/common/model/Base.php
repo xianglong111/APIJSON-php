@@ -59,10 +59,15 @@ class Base extends Model{
      */
     public function initData($model_field){
         $model_arr = [];
-        if(is_array($model_field)){                         
+        if(is_array($model_field)){  
+                                 
             foreach ($model_field as $model_child_name => $model_child) {
+                
+                // 批量新增和修改的操作
+                if($model_child_name === 0) return $model_field;
 
-                if(strpos($model_child_name,'@') !== false){ // 是否为更新数据，有@字段
+                // 单个修改的操作，有@字段
+                if(strpos($model_child_name,'@') !== false){
                     $model_arr[str_replace('@','',$model_child_name)] = $model_child;
                     $this->isUpdate = true;
                     continue;
@@ -132,8 +137,6 @@ class Base extends Model{
         }
     }
 
-
-
     /**
      * 检查字段是否允许操作
      * @access protected
@@ -152,9 +155,6 @@ class Base extends Model{
             exception('没有该字段权限');
         }
     }
-
-
-
 
     /**
      * 查询单条数据
@@ -180,24 +180,31 @@ class Base extends Model{
                     ->where($this->where)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order)
-                    //->fetchSql(true)                      
+                    ->order($this->order)                 
                     ->select();
     }
 
     /**
-     * 新增修改记录
+     * 新增修改一条记录
      * @access public
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateAll($data,$is_arr=false)
+    public function updateOne($data)
     {
-        if($is_arr){
-            return $this->allowField($this->allowed_field)->saveAll($data) !== false;
-        }else{
-            return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
-        }
+        return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+        
+    }
+
+    /**
+     * 新增修改多条记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateAll($data)
+    {
+        return $this->allowField($this->allowed_field)->saveAll($data) !== false;
     }
 
     /**
