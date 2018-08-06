@@ -241,7 +241,6 @@ class Base extends Model{
     public function updateOne($data)
     {
         return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
-        
     }
 
     /**
@@ -264,7 +263,6 @@ class Base extends Model{
     public function updateOnes($data,$uid)
     {
         return $this->allowField($this->allowed_field)->where($this->uid_name,$uid)->isUpdate($this->isUpdate)->save($data) !== false;
-        
     }
 
     /**

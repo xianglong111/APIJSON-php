@@ -23,7 +23,7 @@ function show($status , $message , $data = [] , $httpCode=200) {
  * 获取UID
  */
 function getUid(){
-    $token = request()->header('token');
+    $token = request()->header('Access-Token');
     // 不存在token
     if(is_null($token)){
         return false;
