@@ -23,6 +23,36 @@ class User extends BaseModel{
         'username'
     ];
 
+    /**
+     * 自动完成时间字段，默认create_time、update_time，指定名称为create_at、update_at
+     * @var string
+     */
+    protected $createTime = 'create_at';
+    protected $updateTime = 'update_at';
+
+    /**
+     * 用户登陆
+     * @access public
+     * @param 
+     * @return 
+     */
+    public function login($data){
+
+        
+        
+        return $data;
+
+    } 
+
+    /**
+     * 用户注册
+     * @access public
+     * @param 
+     * @return 
+     */
+    public function register(){
 
 
+
+    }
 }

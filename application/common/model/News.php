@@ -29,8 +29,6 @@ class News extends BaseModel{
         'create_time'
     ];
 
-    // initialize
-
     /**
      * 关联模型：NewsDetail
      * @access public
@@ -63,7 +61,7 @@ class News extends BaseModel{
      */
     public function getTitleAttr($value)
     {
-        return $value.' - 蛋鸡管家';
+        return $value.' - ouyang';
     }
 
 

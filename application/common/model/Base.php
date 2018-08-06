@@ -47,78 +47,89 @@ class Base extends Model{
     protected $with = [];
 
     /**
-     * 模型数组
-     * @var array
+     * 是否为更新
+     * @var bool
      */
-    public $model_arr = '';
+    protected $isUpdate = false;
 
-
-   
     /**
      * 初始化数据
      * @access public
      * @param  array|object $data 数据
      */
-    public function initData($model_arr){
+    public function initData($model_field){
+        $model_arr = [];
+        if(is_array($model_field)){  
+                                 
+            foreach ($model_field as $model_child_name => $model_child) {
+                
+                // 批量新增和修改的操作
+                if($model_child_name === 0) return $model_field;
 
-        $this->model_arr = $model_arr;
+                // 单个修改的操作，有@字段
+                if(strpos($model_child_name,'@') !== false){
+                    $model_arr[str_replace('@','',$model_child_name)] = $model_child;
+                    $this->isUpdate = true;
+                    continue;
+                }
+
+                // 是否为字段，判断标准为是否为数组
+                $is_field = !is_array($model_field[$model_child_name]);
+                if($is_field){
+                    $model_arr[$model_child_name]  = $model_child;
+                }else{
+                    $model_arr['with'][$model_child_name] = "";
+                    foreach($model_child as $key=>$field){
+                        $model_arr['with'][$model_child_name] = $field;
+                    }
+                }
+            }
+        }
         // 验证参数
-        $this->checkParams();
-
+        $this->checkParams($model_arr);
+        return $model_arr;
     }
 
     /**
      * 检测参数正确性
      * @access public
-     * @param  array|object $this->model_arr 模型数组，包含（table、field、page、count等）
+     * @param  array|object $model_arr 模型数组，包含（table、field、page、count等）
      */
-    private $relation_model;
-    protected function checkParams(){
+    protected function checkParams($model_arr){
+
+        if(empty($model_arr)) return;
+
         // 检测查询字段是否有权限
-        if($this->model_arr['@field'] != ''){
-            $this->allowed_field = $this->checkFieldAllowed($this->model_arr['@field'], $this->allowed_field); 
+        if(array_key_exists('field',$model_arr)){
+            $this->allowed_field = $this->checkFieldAllowed($model_arr['field'], $this->allowed_field); 
         }
 
         // 条件语句
-        $this->where = $this->model_arr['@where'];
+        if(array_key_exists('where',$model_arr))$this->where = $model_arr['where'];
 
         // 分页
-        $this->page      = $this->model_arr['@page'];
+        if(array_key_exists('page',$model_arr))$this->page   = $model_arr['page'];
 
         // 限制条数
-        if($this->model_arr['@limit'] != ''){
-            $this->limit = $this->model_arr['@limit'];
+        if(array_key_exists('limit',$model_arr)){
+            $this->limit = $model_arr['limit'];
         }
 
         // 获取总数
-        $this->count = $this->model_arr['@count'];
+        if(array_key_exists('count',$model_arr))$this->count = $model_arr['count'];
         
         // 排序
-        $this->order     = $this->model_arr['@order'];
+        if(array_key_exists('order',$model_arr))$this->order  = $model_arr['order'];
 
-        // 关联模型 输入参数：model1:field1,field2;model2:field1,field2
-        //         输出结果：[ model1=>'field1,field2' , model2=>'field1,field2' ]
-        if($this->model_arr['@with'] != ''){
-            $relation_model_arr = explode(';',$this->model_arr['@with']);
-            // 确定数据正确性
-            if(is_array($relation_model_arr)){
-                foreach($relation_model_arr as $k=>$relation_model){
-                    $relation_model  = explode(':',$relation_model);
-                    $this->with[$relation_model[0]] = function($query) use ($relation_model){
-                        $query->withField($relation_model[1]);
-                    };
-                }
-            }
-        }
-
-        if($this->model_arr['with'] != ''){
-            if(is_array($this->model_arr['with'])){
+        // 关联模型 输入参数:['model'=>'field1,field2,field3']
+        if(array_key_exists('with',$model_arr)){
+            if(is_array($model_arr['with'])){
                 $this->with = [];
-                foreach($this->model_arr['with'] as $model_name=>$field){
+                foreach($model_arr['with'] as $model_name=>$field){
                     // 检测字段是否有权限
                     $model = model($model_name);
                     $field = $this->checkFieldAllowed($field,$model->allowed_field);
-                    $this->with[$model_name] = function($query) use ($field){
+                    $this->with[$model_name] = function($query) use ($field,$model_name){
                         $query->withField($field);
                     };
                 }
@@ -148,8 +159,7 @@ class Base extends Model{
     /**
      * 查询单条数据
      * @access public
-     * @param  array
-     * @return
+     * @return array
      */
     public function findOne(){
         return $this->field($this->allowed_field)
@@ -162,8 +172,7 @@ class Base extends Model{
     /**
      * 查询多条数据
      * @access public
-     * @param  array
-     * @return
+     * @return array
      */
     public function findAll(){
         return $this->field($this->allowed_field)
@@ -171,15 +180,59 @@ class Base extends Model{
                     ->where($this->where)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order)                        
+                    ->order($this->order)                 
                     ->select();
+    }
+
+    /**
+     * 新增修改一条记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateOne($data)
+    {
+        return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+        
+    }
+
+    /**
+     * 新增修改多条记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function updateAll($data)
+    {
+        return $this->allowField($this->allowed_field)->saveAll($data) !== false;
+    }
+
+    /**
+     * 删除记录
+     * @access public
+     * @param  mixed $data 主键列表 支持闭包查询条件
+     * @return bool
+     */
+    public function deleteAll($data)
+    {
+        $resultSet = $this->select($data);
+        
+        if (count($resultSet) === 0){
+            return false;
+        }else{
+            foreach ($resultSet as $data) {
+                $rs = $data->delete();
+                if($rs === false) return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * 获取总数量
      * @access public
-     * @param  array
-     * @return
+     * @return int
      */
     public function getCount(){
         return $this->with($this->with)
@@ -188,15 +241,25 @@ class Base extends Model{
     }
 
     /**
+<<<<<<< HEAD
      * 执行模型方法
      * @access public
      * @param  string
      * @param  array
+=======
+     * 执行模型自定义方法
+     * @access public
+     * @param  string fun_name 方法名
+     * @param  array  data 参数
+>>>>>>> dev
      * @return
      */
     public function exeFun($fun_name,$data){
         return call_user_func_array([$this,$fun_name],[$data]);
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> dev
 
 }
