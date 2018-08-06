@@ -31,6 +31,9 @@ function getUid(){
     $uid = cache($token);
     if(is_null($uid)) {
         return false;
+    }else{
+        // 重新设置过期时间
+        cache($token,$uid,config('token.pc_expiry_time'));
     }
     return $uid;
 }
