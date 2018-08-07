@@ -57,6 +57,7 @@ class JsonParser{
                     $uid = getUid();
                     if($uid == false) exception('没有相关权限或超时，请您重新登录！');
                     if($handle_type == 'gets'){
+                        
                         $data[$model_name] = $is_arr?$model->findAlls($uid):$model->findOnes($uid);
                         // 获取总数
                         if($is_arr && array_key_exists('count',$model_arr)){

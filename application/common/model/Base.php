@@ -162,7 +162,7 @@ class Base extends Model{
             exception('没有该字段权限');
         }
     }
-    
+
     /**
      * 查询单条数据
      * @access public
@@ -217,8 +217,7 @@ class Base extends Model{
                     ->where($this->table.'.'.$this->uid_name,$uid)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order) 
-                    //->fetchSql(true)
+                    ->order($this->order)
                     ->select();
     }
 
@@ -231,11 +230,8 @@ class Base extends Model{
     public function updateOne($data)
     {
         // 判断为新增还是修改
-        if(array_key_exists($this->pk,$data)){
-            return $this->allowField($this->allowed_field)->update($data) !== false;
-        }else{
-            return $this->allowField($this->allowed_field)->insert($data) !== false;
-        }
+        $is_update = array_key_exists($this->pk,$data);
+        return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
     }
 
     /**
@@ -257,19 +253,15 @@ class Base extends Model{
      */
     public function updateOnes($data,$uid)
     {
+        // 判断用户是否当前用户
+        $user = $this->where($this->uid_name,$uid)->column($this->uid_name);
+        if(!$user) return false;
         if(array_key_exists($this->pk,$data)){
-            $pk = $data[$this->pk];
-            unset($data[$this->pk]);
-            $rs = $this->allowField($this->allowed_field)
-                        ->where($this->uid_name,$uid)
-                        ->where($this->pk,$pk)
-                        ->data($data)
-                        ->update();
-            return $rs!== false;
+            return $this->allowField($this->allowed_field)->isUpdate(true)->save($data) !== false;
         }else{
             // 新增时加入UID
             $data[$this->uid_name] = $uid;
-            return $this->allowField($this->allowed_field)->insert($data) !== false;
+            return $this->allowField($this->allowed_field)->isUpdate(false)->save($data) !== false;
         }
     }
 
@@ -342,7 +334,7 @@ class Base extends Model{
     public function getCounts($uid){
         return $this->with($this->with)
                     ->where($this->where)
-                    ->where($this->uid_name,$uid)
+                    ->where($this->table.'.'.$this->uid_name,$uid)
                     ->count($this->count);
     }
 

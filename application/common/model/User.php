@@ -1,5 +1,5 @@
 <?php
-namespace app\index\model;
+namespace app\common\model;
 use app\common\model\Base as BaseModel;
 
 class User extends BaseModel{
