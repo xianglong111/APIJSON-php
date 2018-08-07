@@ -212,7 +212,7 @@ class Base extends Model{
         return $this->field($this->allowed_field)
                         ->with($this->with)
                         ->where($this->where)
-                        ->where($this->table.' '.$$this->uid_name,$uid)
+                        ->where($this->table.'.'.$$this->uid_name,$uid)
                         ->order($this->order)
                         ->find();
     }
