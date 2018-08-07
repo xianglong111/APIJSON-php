@@ -61,6 +61,12 @@ class Base extends Model{
     protected $isUpdate = false;
 
     /**
+     * 更新主键值
+     * @var array
+     */
+    protected $updatePk = [];
+
+    /**
      * uid字段名
      * @var string
      */
@@ -82,8 +88,8 @@ class Base extends Model{
 
                 // 单个修改的操作，有@字段
                 if(strpos($model_child_name,'@') !== false){
-                    $model_arr[str_replace('@','',$model_child_name)] = $model_child;
-                    $this->isUpdate = true;
+                    $this->updatePk[] = str_replace('@','',$model_child_name);
+                    $this->updatePk[] = $model_child;
                     continue;
                 }
 
@@ -248,7 +254,16 @@ class Base extends Model{
      */
     public function updateOne($data)
     {
-        return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+        if(!empty($this->updatePk)){
+            list($pk,$value) = $this->updatePk;
+            $rs = $this->allowField($this->allowed_field)
+                        ->where($pk,$value)
+                        ->data($data)
+                        ->update();
+            return $rs!== false;
+        }else{
+            return $this->allowField($this->allowed_field)->insert($data) !== false;
+        }
     }
 
     /**
@@ -270,12 +285,18 @@ class Base extends Model{
      */
     public function updateOnes($data,$uid)
     {
-        if($this->isUpdate){
-            return $this->allowField($this->allowed_field)->where($this->uid_name,$uid)->isUpdate($this->isUpdate)->save($data) !== false;
+        if(!empty($this->updatePk)){
+            list($pk,$value) = $this->updatePk;
+            $rs = $this->allowField($this->allowed_field)
+                        ->where($this->uid_name,$uid)
+                        ->where($pk,$value)
+                        ->data($data)
+                        ->update();
+            return $rs!== false;
         }else{
             // 新增时加入UID
             $data[$this->uid_name] = $uid;
-            return $this->allowField($this->allowed_field)->isUpdate($this->isUpdate)->save($data) !== false;
+            return $this->allowField($this->allowed_field)->insert($data) !== false;
         }
     }
 
@@ -285,9 +306,18 @@ class Base extends Model{
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateAlls($data,$uid)
+    public function updateAlls($datas,$uid)
     {
-        return $this->allowField($this->allowed_field)->where($this->uid_name,$uid)->saveAll($data) !== false;
+        foreach($datas as $data){
+            $pk  = $data[$this->pk];
+            unset($data[$this->pk]);
+            $rs = $this->allowField($this->allowed_field)
+                        ->where($this->uid_name,$uid)
+                        ->where($this->pk,$pk)
+                        ->data($data)
+                        ->update();
+        }
+        return $rs;
     }
 
 

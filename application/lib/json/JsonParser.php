@@ -1,5 +1,4 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | JNAPI [ Jinaong Api Docment ]
 // +----------------------------------------------------------------------
@@ -17,7 +16,9 @@ class JsonParser{
      * @param  string $json_arr JSON数据
      * @return array
      */
-    public static function run($json_arr,$handle_type = 'get'){
+    public function run($json_arr){
+        // 获取当前方法名
+        $handle_type = request()->action();
         if(empty($json_arr)) return [];
         $data = [];
         foreach ($json_arr as $model_name => $model_field) {
@@ -31,6 +32,7 @@ class JsonParser{
             $action_name = '';
             if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
             
+             
             // 实例化模型
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
@@ -68,4 +70,8 @@ class JsonParser{
         }
         return $data;
     }
+
 }
+
+
+

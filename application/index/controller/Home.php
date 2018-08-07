@@ -24,7 +24,8 @@ class Home
         if(is_null($json_arr)){      
            exception('数据格式错误');
         }else{
-           $this->data = JsonParser::run($json_arr,request()->action());
+            $jsonParser = new JsonParser();
+            $this->data = $jsonParser->run($json_arr);
         }
     }
     

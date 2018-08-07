@@ -8,14 +8,12 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
-
 function show($status , $message , $data = [] , $httpCode=200) {
     $data = [
         'retcode'=>$status,
         'msg'=>$message,
         'data'=>$data,
     ];
-    $httpCode = 200;
     return json($data , $httpCode);
 }
 
