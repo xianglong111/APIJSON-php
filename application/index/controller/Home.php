@@ -31,23 +31,23 @@ class Home
     
     public function get()
     {
-        return show(200,'success',$this->data);
+        return show(0,'success',$this->data);
     }
 
     public function gets(){
-        return show(200,'success',$this->data);
+        return show(0,'success',$this->data);
     }
 
     public function post(){
-        return show(200,'success',$this->data);
+        return show(0,'success',$this->data);
     }
 
     public function posts(){
-        return show(200,'success',$this->data);
+        return show(0,'success',$this->data);
     }
 
     public function delete(){
-        return show(200,'success',$this->data);
+        return show(0,'success',$this->data);
     }
 }
 

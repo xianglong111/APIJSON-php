@@ -104,7 +104,7 @@ class Base extends Model{
      */
     protected function checkParams($model_arr){
 
-        if(empty($model_arr)) return;
+        if(empty($model_arr)) return [];
 
         // 检测查询字段是否有权限
         if(array_key_exists('field',$model_arr)){
@@ -162,19 +162,7 @@ class Base extends Model{
             exception('没有该字段权限');
         }
     }
-
-    /**
-     * 检测token
-     * @access public
-     * @return array
-     */
-    public function getUid(){
-        $uid = getUid();
-        if($uid == false) exception('没有相关权限或超时，请您重新登录！');
-        return $uid;
-    }
-
-
+    
     /**
      * 查询单条数据
      * @access public

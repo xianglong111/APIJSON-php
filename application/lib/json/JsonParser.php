@@ -33,7 +33,7 @@ class JsonParser{
             if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
             
             // 实例化模型
-            $model = $this->parseModuleAndClass($table_name);
+            $model = model($table_name);
             $model_arr = $model->initData($model_field);
             if(!empty($model_field)&&empty($model_arr)) exception('缺少必要的参数');
 
@@ -54,7 +54,8 @@ class JsonParser{
                 }elseif($handle_type == 'delete'){ // 删除数据
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
                 }else{
-                    $uid = $model->getUid();
+                    $uid = getUid();
+                    if($uid == false) exception('没有相关权限或超时，请您重新登录！');
                     if($handle_type == 'gets'){
                         $data[$model_name] = $is_arr?$model->findAlls($uid):$model->findOnes($uid);
                         // 获取总数
@@ -68,49 +69,6 @@ class JsonParser{
             }
         }
         return $data;
-    }
-
-
-    /**
-     * 解析模块和类名
-     * @access protected
-     * @param  string $name         资源地址
-     * @param  string $layer        验证层名称
-     * @param  bool   $appendSuffix 是否添加类名后缀
-     * @return array
-     */
-    protected function parseModuleAndClass($name,$common='common',$layer='model')
-    {
-        $class  = parse_name($name,1);
-        $module = request()->module();
-        $class  = $this->parseClass($module, $layer, $name);
-        if(!class_exists($class)){
-            $class = $this->parseClass($common, $layer, $name);
-            if(!class_exists($class)){
-                // 查询子目录下的模块
-                $class = $this->parseClass($common, $layer, $name,true);
-            }
-        }
-        return app($class);
-    }
-
-    /**
-     * 解析应用类的类名
-     * @access public
-     * @param  string $module 模块名
-     * @param  string $layer  层名 controller model ...
-     * @param  string $name   类名
-     * @param  string   $appendSuffix
-     * @return string
-     */
-    public function parseClass($module, $layer, $name, $appendSuffix = false)
-    {
-        if($appendSuffix){
-            list($model_name,$child_name) = explode('_',$name);
-            $layer .= '\\'.$model_name;
-        }
-        $name = parse_name($name,1);
-        return 'app\\' . $module . '\\' . $layer . '\\'  . $name;
     }
 }
 

@@ -19,7 +19,7 @@ class ExceptionHandler extends Handle
     public function render(Exception $e)
      {
         
-        $retCode = 0; // 系统错误
+        $retCode = 1; // 系统错误
         if(method_exists($e,'getStatusCode')){
             $retCode = $e->getStatusCode();
         }
@@ -29,8 +29,7 @@ class ExceptionHandler extends Handle
         
         $result = [
             'msg'  => $this->msg,
-            'retcode' => $this->errorCode,
-//            'request_url' => $request = $request->url()
+            'retcode' => $this->errorCode
         ];
         if(config('app_debug')){
             // 调试状态下需要显示TP默认的异常页面，因为TP的默认页面
