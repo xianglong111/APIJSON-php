@@ -291,14 +291,13 @@ class Base extends Model{
     }
 
     /**
-     * 执行模型自定义方法
+     * 执行模型方法
      * @access public
-     * @param  string fun_name 方法名
-     * @param  array  data 参数
+     * @param  string
+     * @param  array
      * @return
      */
     public function exeFun($fun_name,$data){
         return call_user_func_array([$this,$fun_name],[$data]);
     }
-
 }

@@ -49,5 +49,6 @@ class Home
     public function delete(){
         return show(0,'success',$this->data);
     }
+    
 }
 
