@@ -135,7 +135,7 @@ class Base extends Model{
         // 排序
         if(array_key_exists('order',$model_arr))$this->order  = $model_arr['order'];
 
-        // 关联模型 输入参数:['model'=>'field1,field2,field3']
+        // 关联模型
         if(array_key_exists('with',$model_arr)){
             if(is_array($model_arr['with'])){
                 $this->with = [];

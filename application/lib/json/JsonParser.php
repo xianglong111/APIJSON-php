@@ -10,7 +10,7 @@
 
 namespace app\lib\json;
 class JsonParser{
-
+    
     /**
      * Json数组对外解析器
      * @access public
@@ -34,12 +34,13 @@ class JsonParser{
             // 实例化模型
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
-            if(!empty($model_field)&&empty($model_arr))abort('缺少必要的参数');
+            if(!empty($model_field)&&empty($model_arr)) exception('缺少必要的参数');
 
             // 执行自定义方法
             if( $is_fun ) {
                 $data[$model_name] = $model->exeFun($action_name,$model_arr);
             }else{
+                if(in_array($table_name,config('model.no_access_allowed'))) exception( '不允许访问' );
                 // 查询
                 if($handle_type == 'get'){
                     $data[$model_name] = $is_arr?$model->findAll():$model->findOne();
