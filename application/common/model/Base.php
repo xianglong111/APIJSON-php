@@ -55,12 +55,6 @@ class Base extends Model{
     protected $with = [];
 
     /**
-     * 是否为更新
-     * @var bool
-     */
-    protected $isUpdate = false;
-
-    /**
      * 更新主键值
      * @var array
      */
@@ -70,7 +64,7 @@ class Base extends Model{
      * uid字段名
      * @var string
      */
-    protected $uid_name = 'uid';
+    public $uid_name = 'uid';
 
     /**
      * 初始化数据
@@ -85,13 +79,6 @@ class Base extends Model{
                 
                 // 批量新增和修改的操作
                 if($model_child_name === 0) return $model_field;
-
-                // 单个修改的操作，有@字段
-                if(strpos($model_child_name,'@') !== false){
-                    $this->updatePk[] = str_replace('@','',$model_child_name);
-                    $this->updatePk[] = $model_child;
-                    continue;
-                }
 
                 // 是否为字段，判断标准为是否为数组
                 $is_field = !is_array($model_field[$model_child_name]);
@@ -225,7 +212,7 @@ class Base extends Model{
         return $this->field($this->allowed_field)
                         ->with($this->with)
                         ->where($this->where)
-                        ->where($this->uid_name,$uid)
+                        ->where($this->table.' '.$$this->uid_name,$uid)
                         ->order($this->order)
                         ->find();
     }
@@ -239,10 +226,11 @@ class Base extends Model{
         return $this->field($this->allowed_field)
                     ->with($this->with)
                     ->where($this->where)
-                    ->where($this->uid_name,$uid)
+                    ->where($this->table.'.'.$this->uid_name,$uid)
                     ->page($this->page)
                     ->limit($this->limit)
                     ->order($this->order) 
+                    //->fetchSql(true)
                     ->select();
     }
 
@@ -254,13 +242,9 @@ class Base extends Model{
      */
     public function updateOne($data)
     {
-        if(!empty($this->updatePk)){
-            list($pk,$value) = $this->updatePk;
-            $rs = $this->allowField($this->allowed_field)
-                        ->where($pk,$value)
-                        ->data($data)
-                        ->update();
-            return $rs!== false;
+        // 判断为新增还是修改
+        if(array_key_exists($this->pk,$data)){
+            return $this->allowField($this->allowed_field)->update($data) !== false;
         }else{
             return $this->allowField($this->allowed_field)->insert($data) !== false;
         }
@@ -285,11 +269,12 @@ class Base extends Model{
      */
     public function updateOnes($data,$uid)
     {
-        if(!empty($this->updatePk)){
-            list($pk,$value) = $this->updatePk;
+        if(array_key_exists($this->pk,$data)){
+            $pk = $data[$this->pk];
+            unset($data[$this->pk]);
             $rs = $this->allowField($this->allowed_field)
                         ->where($this->uid_name,$uid)
-                        ->where($pk,$value)
+                        ->where($this->pk,$pk)
                         ->data($data)
                         ->update();
             return $rs!== false;
@@ -308,16 +293,23 @@ class Base extends Model{
      */
     public function updateAlls($datas,$uid)
     {
+        // 判断为新增还是修改
+        $is_update = array_key_exists($this->pk,$datas[0]);
         foreach($datas as $data){
-            $pk  = $data[$this->pk];
-            unset($data[$this->pk]);
-            $rs = $this->allowField($this->allowed_field)
-                        ->where($this->uid_name,$uid)
-                        ->where($this->pk,$pk)
-                        ->data($data)
-                        ->update();
+            if($is_update){
+                $pk  = $data[$this->pk];
+                unset($data[$this->pk]);
+                $rs = $this->allowField($this->allowed_field)
+                            ->where($this->uid_name,$uid)
+                            ->where($this->pk,$pk)
+                            ->data($data)
+                            ->update();
+            }else{
+                $data['uid'] = $uid;
+                $rs = $this->insert($data);
+            }
         }
-        return $rs;
+        return $rs !== false;
     }
 
 
