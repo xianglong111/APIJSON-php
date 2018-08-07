@@ -177,7 +177,7 @@ class Base extends Model{
      */
     public function getUid(){
         $uid = getUid();
-        if($uid === false) exception('没有相关权限或超时，请您重新登录！');
+        if($uid == false) exception('没有相关权限或超时，请您重新登录！');
         return $uid;
     }
 
@@ -236,7 +236,7 @@ class Base extends Model{
                     ->where($this->uid_name,$uid)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order)                 
+                    ->order($this->order) 
                     ->select();
     }
 

@@ -29,7 +29,7 @@ function getUid(){
         return false;
     }
     $uid = cache($token);
-    if(is_null($uid)) {
+    if(is_null($uid) || empty($uid)) {
         return false;
     }else{
         // 重新设置过期时间

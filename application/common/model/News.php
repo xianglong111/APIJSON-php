@@ -21,6 +21,7 @@ class News extends BaseModel{
      */
     public $allowed_field = [
         'id',
+        'uid',
         'title',
         'description',
         'category',
