@@ -54,16 +54,16 @@ class Base extends Model{
     protected $with = [];
 
     /**
-     * 更新主键值
-     * @var array
-     */
-    protected $updatePk = [];
-
-    /**
      * uid字段名
      * @var string
      */
     protected $uid_name = 'uid';
+    
+    /**
+     * uid字段条件语句
+     * @var string
+     */
+    protected $uid_condition = '';
 
     /**
      * 初始化数据
@@ -161,6 +161,17 @@ class Base extends Model{
     }
 
     /**
+     * 检查字段是否允许操作
+     * @access protected
+     * @param  array   $field 当前字段列表
+     * @param array   $allowed_field 允许字段列表
+     * @return
+     */
+    public function setUidCondition($uid){
+        $this->uid_condition = $this->table.'.'.$this->uid_name.'='.$uid;
+    }
+
+    /**
      * 查询单条数据
      * @access public
      * @return array
@@ -169,6 +180,7 @@ class Base extends Model{
         return $this->field($this->allowed_field)
                         ->with($this->with)
                         ->where($this->where)
+                        ->where($this->uid_condition)
                         ->order($this->order)
                         ->find();
     }
@@ -182,64 +194,11 @@ class Base extends Model{
         return $this->field($this->allowed_field)
                     ->with($this->with)
                     ->where($this->where)
+                    ->where($this->uid_condition)
                     ->page($this->page)
                     ->limit($this->limit)
                     ->order($this->order)                 
                     ->select();
-    }
-
-    /**
-     * 验证token查询单条数据
-     * @access public
-     * @return array
-     */
-    public function findOnes($uid){
-        return $this->field($this->allowed_field)
-                        ->with($this->with)
-                        ->where($this->where)
-                        ->where($this->table.'.'.$this->uid_name,$uid)
-                        ->order($this->order)
-                        ->find();
-    }
-
-    /**
-     * 验证token查询多条数据
-     * @access public
-     * @return array
-     */
-    public function findAlls($uid){
-        return $this->field($this->allowed_field)
-                    ->with($this->with)
-                    ->where($this->where)
-                    ->where($this->table.'.'.$this->uid_name,$uid)
-                    ->page($this->page)
-                    ->limit($this->limit)
-                    ->order($this->order)
-                    ->select();
-    }
-
-    /**
-     * 新增修改一条记录
-     * @access public
-     * @param  mixed $data 主键列表 支持闭包查询条件
-     * @return bool
-     */
-    public function updateOne($data)
-    {
-        // 判断为新增还是修改
-        $is_update = array_key_exists($this->pk,$data);
-        return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
-    }
-
-    /**
-     * 新增修改多条记录
-     * @access public
-     * @param  mixed $data 主键列表 支持闭包查询条件
-     * @return bool
-     */
-    public function updateAll($data)
-    {
-        return $this->allowField($this->allowed_field)->saveAll($data) !== false;
     }
 
     /**
@@ -248,12 +207,17 @@ class Base extends Model{
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateOnes($data,$uid)
+    public function updateOne($data,$uid = false)
     {
+        // 判断为新增还是修改
+        $is_update = array_key_exists($this->pk,$data);
+        if($uid === false){
+            return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
+        }
         // 判断操作用户是否当前用户
         $user = $this->where($this->uid_name,$uid)->column($this->uid_name);
         if(!$user) return false;
-        if(array_key_exists($this->pk,$data)){
+        if($is_update){
             return $this->allowField($this->allowed_field)->isUpdate(true)->save($data) !== false;
         }else{
             // 新增时加入UID
@@ -268,8 +232,11 @@ class Base extends Model{
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateAlls($datas,$uid)
+    public function updateAll($datas,$uid = false)
     {
+        if($uid === false){
+            return $this->allowField($this->allowed_field)->saveAll($data) !== false;
+        }
         // 判断为新增还是修改
         $is_update = array_key_exists($this->pk,$datas[0]);
         foreach($datas as $data){
@@ -316,21 +283,10 @@ class Base extends Model{
      * @access public
      * @return int
      */
-    public function getCount(){
+    public function getCount($uid = false){
         return $this->with($this->with)
                     ->where($this->where)
-                    ->count($this->count);
-    }
-
-    /**
-     * 获取总数量
-     * @access public
-     * @return int
-     */
-    public function getCounts($uid){
-        return $this->with($this->with)
-                    ->where($this->where)
-                    ->where($this->table.'.'.$this->uid_name,$uid)
+                    ->where($this->uid_condition)
                     ->count($this->count);
     }
 
