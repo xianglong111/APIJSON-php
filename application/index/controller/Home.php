@@ -22,7 +22,7 @@ class Home
     private function init(){
         $json_arr = json_decode(request()->getInput(),true);
         if(is_null($json_arr)){      
-           exception('数据格式错误');
+            error('DATA_FORMAT_WRONG');
         }else{
             $jsonParser = new JsonParser();
             $this->data = $jsonParser->run($json_arr);

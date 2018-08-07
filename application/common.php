@@ -35,3 +35,11 @@ function getUid(){
     }
     return $uid;
 }
+
+/**
+ * 抛出错误信息
+ */
+function error($sign){
+    $msg = config('app_debug')?'msg':'msg_en';
+    abort(config('error.'.$sign.'.code'),config('error.'.$sign.'.'.$msg));
+}

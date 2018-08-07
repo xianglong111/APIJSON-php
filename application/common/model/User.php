@@ -38,7 +38,7 @@ class User extends BaseModel{
      */
     public function login($data){
         $uid = getUid();
-        if($uid !== false) abort(302, '已登录');
+        if($uid !== false) error('DUPLICATE_LOGIN');
         $uid = 1;
         
         $user['token'] = $this->token($uid);

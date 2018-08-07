@@ -35,13 +35,13 @@ class JsonParser{
             // 实例化模型
             $model = model($table_name);
             $model_arr = $model->initData($model_field);
-            if(!empty($model_field)&&empty($model_arr)) exception('缺少必要的参数');
+            if(!empty($model_field)&&empty($model_arr)) error('MISSING_PARAMET');
 
             // 执行自定义方法
             if( $is_fun ) {
                 $data[$model_name] = $model->exeFun($action_name,$model_arr);
             }else{
-                if(in_array($table_name,config('model.no_access_allowed'))) exception( '不允许访问' );
+                if(in_array($table_name,config('model.no_access_allowed'))) error('NO_ACCESS_ALLOWED');
                 // 查询
                 if($handle_type == 'get'){
                     $data[$model_name] = $is_arr?$model->findAll():$model->findOne();
@@ -55,7 +55,7 @@ class JsonParser{
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
                 }else{
                     $uid = getUid();
-                    if($uid == false) exception('没有相关权限或超时，请您重新登录！');
+                    if($uid == false) error('LOGIN_TIMEOUT');
                     if($handle_type == 'gets'){
                         
                         $data[$model_name] = $is_arr?$model->findAlls($uid):$model->findOnes($uid);

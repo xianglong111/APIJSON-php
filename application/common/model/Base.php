@@ -11,7 +11,6 @@ namespace app\common\model;
 use think\Model;
 
 class Base extends Model{
-
     /**
      * 允许访问字段
      * @var array
@@ -64,7 +63,7 @@ class Base extends Model{
      * uid字段名
      * @var string
      */
-    public $uid_name = 'uid';
+    protected $uid_name = 'uid';
 
     /**
      * 初始化数据
@@ -73,10 +72,8 @@ class Base extends Model{
      */
     public function initData($model_field){
         $model_arr = [];
-        if(is_array($model_field)){  
-                                 
+        if(is_array($model_field)){
             foreach ($model_field as $model_child_name => $model_child) {
-                
                 // 批量新增和修改的操作
                 if($model_child_name === 0) return $model_field;
 
@@ -159,7 +156,7 @@ class Base extends Model{
         if(empty($allowed_field_rs)){
             return $field;
         }else{
-            exception('没有该字段权限');
+            error('NO_PERMISSIONS_FIELD');
         }
     }
 
@@ -253,7 +250,7 @@ class Base extends Model{
      */
     public function updateOnes($data,$uid)
     {
-        // 判断用户是否当前用户
+        // 判断操作用户是否当前用户
         $user = $this->where($this->uid_name,$uid)->column($this->uid_name);
         if(!$user) return false;
         if(array_key_exists($this->pk,$data)){
@@ -291,7 +288,6 @@ class Base extends Model{
         }
         return $rs !== false;
     }
-
 
     /**
      * 删除记录
