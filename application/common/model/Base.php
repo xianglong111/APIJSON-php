@@ -176,8 +176,10 @@ class Base extends Model{
     public function setUidCondition(){
         $this->uid = getUid();
         if($this->uid == false) error('LOGIN_TIMEOUT');
-        $alias = str_replace(config('database.prefix'),'',$this->table);
-        $this->uid_condition = $alias.'.'.$this->uid_name.'='.$this->uid;
+        if(!empty($this->with)){
+            $alias = str_replace(config('database.prefix'),'',$this->table);
+            $this->uid_condition = $alias.'.'.$this->uid_name.'='.$this->uid;
+        }
     }
 
     /**
