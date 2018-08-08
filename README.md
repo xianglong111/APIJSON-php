@@ -1,7 +1,7 @@
 # PHP JSON-API
-[![PHP API](https://img.shields.io/badge/php-7.0%2B-brightgreen.svg?style=flat)](https://github.com/xianglong111/json-api/blob/master)
-[![PHP API](https://img.shields.io/badge/thinkphp-5.1.0%2B-jekyll.svg?style=flat)](https://github.com/xianglong111/json-api/blob/master)
-[![MySQL API](https://img.shields.io/badge/MySQL-5.5%2B-brightgreen.svg?style=flat)](https://github.com/xianglong111/json-api/blob/master) 
+[![PHP API](https://img.shields.io/badge/php-7.0%2B-brightgreen.svg?style=flat)](https://github.com/topics/php)
+[![PHP API](https://img.shields.io/badge/thinkphp-5.1.0%2B-jekyll.svg?style=flat)](https://github.com/top-think/framework)
+[![MySQL API](https://img.shields.io/badge/MySQL-5.5%2B-brightgreen.svg?style=flat)](https://github.com/mysqljs/mysql) 
 [![License](https://img.shields.io/badge/license-MIT%202-4EB1BA.svg)](https://github.com/xianglong111/json-api/blob/master/LICENSE)
 
 JSON-API是一种为API而生的JSON网络传输协议。<br />
