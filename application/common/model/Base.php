@@ -219,11 +219,9 @@ class Base extends Model{
      * @return bool
      */
     protected function checkUser($pk){
-
         // 判断操作用户是否当前用户
         $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->column($this->uid_name);
         if(!$user) error('NO_ACCESS_ALLOWED');
-
     }
 
 
@@ -235,19 +233,16 @@ class Base extends Model{
      */
     public function updateOne($data)
     {
-        // 判断为新增还是修改
         $is_update = array_key_exists($this->pk,$data);
-        if($this->uid === false){
-            return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
+        if($this->uid !== false){
+            // 判断为新增还是修改
+            if($is_update){
+                $this->checkUser($data[$this->pk]);
+            }else{
+                $data[$this->uid_name] = $this->uid;
+            }
         }
-        if($is_update){
-            $this->checkUser($data[$this->pk]);
-            return $this->allowField($this->allowed_field)->isUpdate(true)->save($data) !== false;
-        }else{
-            // 新增时加入UID
-            $data[$this->uid_name] = $this->uid;
-            return $this->allowField($this->allowed_field)->isUpdate(false)->save($data) !== false;
-        }
+        return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
     }
 
     /**
@@ -261,8 +256,7 @@ class Base extends Model{
         if(!is_array($datas)) return false;
         if($this->uid !== false){
             foreach($datas as $key=>$data){
-                $is_update = array_key_exists($this->pk,$data);
-                if($is_update){
+                if(array_key_exists($this->pk,$data)){
                     $this->checkUser($data[$this->pk]);
                 }else{
                     $data['uid'] = $this->uid;
