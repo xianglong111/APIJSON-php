@@ -252,18 +252,10 @@ class Base extends Model{
         // 判断为新增还是修改
         $is_update = array_key_exists($this->pk,$datas[0]);
         foreach($datas as $data){
-            if($is_update){
-                $pk  = $data[$this->pk];
-                unset($data[$this->pk]);
-                $rs = $this->allowField($this->allowed_field)
-                            ->where($this->uid_name,$uid)
-                            ->where($this->pk,$pk)
-                            ->data($data)
-                            ->update();
-            }else{
+            if(!$is_update){
                 $data['uid'] = $this->uid;
-                $rs = $this->insert($data);
             }
+            $rs = $this->updateOne($data);
         }
         return $rs !== false;
     }
