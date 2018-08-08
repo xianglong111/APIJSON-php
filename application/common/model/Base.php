@@ -60,6 +60,12 @@ class Base extends Model{
     protected $uid_name = 'uid';
     
     /**
+     * uid字段名
+     * @var mixed
+     */
+    protected $uid = false;
+
+    /**
      * uid字段条件语句
      * @var string
      */
@@ -167,8 +173,11 @@ class Base extends Model{
      * @param array   $allowed_field 允许字段列表
      * @return
      */
-    public function setUidCondition($uid){
-        $this->uid_condition = $this->table.'.'.$this->uid_name.'='.$uid;
+    public function setUidCondition(){
+        $this->uid = getUid();
+        if($this->uid == false) error('LOGIN_TIMEOUT');
+        $alias = str_replace(config('database.prefix'),'',$this->table);
+        $this->uid_condition = $alias.'.'.$this->uid_name.'='.$this->uid;
     }
 
     /**
@@ -197,7 +206,7 @@ class Base extends Model{
                     ->where($this->uid_condition)
                     ->page($this->page)
                     ->limit($this->limit)
-                    ->order($this->order)                 
+                    ->order($this->order)
                     ->select();
     }
 
@@ -207,21 +216,21 @@ class Base extends Model{
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateOne($data,$uid = false)
+    public function updateOne($data)
     {
         // 判断为新增还是修改
         $is_update = array_key_exists($this->pk,$data);
-        if($uid === false){
+        if($this->uid === false){
             return $this->allowField($this->allowed_field)->isUpdate($is_update)->save($data) !== false;
         }
         // 判断操作用户是否当前用户
-        $user = $this->where($this->uid_name,$uid)->column($this->uid_name);
+        $user = $this->where($this->uid_name,$this->uid)->column($this->uid_name);
         if(!$user) return false;
         if($is_update){
             return $this->allowField($this->allowed_field)->isUpdate(true)->save($data) !== false;
         }else{
             // 新增时加入UID
-            $data[$this->uid_name] = $uid;
+            $data[$this->uid_name] = $this->uid;
             return $this->allowField($this->allowed_field)->isUpdate(false)->save($data) !== false;
         }
     }
@@ -232,9 +241,10 @@ class Base extends Model{
      * @param  mixed $data 主键列表 支持闭包查询条件
      * @return bool
      */
-    public function updateAll($datas,$uid = false)
+    public function updateAll($datas)
     {
-        if($uid === false){
+        // 不验证相关token
+        if($this->uid === false){
             return $this->allowField($this->allowed_field)->saveAll($data) !== false;
         }
         // 判断为新增还是修改
@@ -249,7 +259,7 @@ class Base extends Model{
                             ->data($data)
                             ->update();
             }else{
-                $data['uid'] = $uid;
+                $data['uid'] = $this->uid;
                 $rs = $this->insert($data);
             }
         }
@@ -283,7 +293,7 @@ class Base extends Model{
      * @access public
      * @return int
      */
-    public function getCount($uid = false){
+    public function getCount(){
         return $this->with($this->with)
                     ->where($this->where)
                     ->where($this->uid_condition)

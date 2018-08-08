@@ -54,9 +54,7 @@ class JsonParser{
                 }elseif($handle_type == 'delete'){ // 删除数据
                     $data[$model_name]['result'] = model($table_name)->deleteAll(reset($model_arr)) !== false;
                 }else{
-                    $uid = getUid();
-                    if($uid == false) error('LOGIN_TIMEOUT');
-                    $model->setUidCondition($uid);
+                    $model->setUidCondition();
                     if($handle_type == 'gets'){
                         $data[$model_name] = $is_arr?$model->findAll():$model->findOne();
                         // 获取总数
@@ -64,7 +62,7 @@ class JsonParser{
                             $data[$table_name.".count"] = $model->getCount();
                         }
                     }elseif($handle_type == 'posts'){
-                        $data[$model_name]['result'] = $is_arr?$model->updateAll($model_arr,$uid):$model->updateOne($model_arr,$uid);
+                        $data[$model_name]['result'] = $is_arr?$model->updateAll($model_arr):$model->updateOne($model_arr);
                     }
                 }  
             }

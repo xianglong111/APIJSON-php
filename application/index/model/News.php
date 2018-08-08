@@ -1,5 +1,5 @@
 <?php
-namespace app\common\model;
+namespace app\index\model;
 use app\common\model\Base as BaseModel;
 
 class News extends BaseModel{

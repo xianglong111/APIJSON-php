@@ -1,5 +1,5 @@
 <?php
-namespace app\common\model;
+namespace app\index\model;
 use app\common\model\Base as BaseModel;
 
 class User extends BaseModel{
@@ -54,6 +54,18 @@ class User extends BaseModel{
     public function register(){
 
 
+
+    }
+
+    /**
+     * 查询
+     * @access public
+     * @param 
+     * @return 
+     */
+    public function findAll(){
+
+        return $this->field($this->allowed_field)->order('id asc')->limit(10)->select();
 
     }
 
