@@ -21,7 +21,7 @@ return [
 
     'NO_ACCESS_ALLOWED' => [
         'code'=>3,
-        'msg' =>'不允许访问',
+        'msg' =>'没有相关权限',
         'msg_en'=>'No access is allowed'
     ],
 
