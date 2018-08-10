@@ -53,7 +53,7 @@ class User extends BaseModel{
      */
     public function register(){
 
-
+        return [1,2,3,4];
 
     }
 

@@ -21,10 +21,13 @@ return [
     'level'       => [],
     // 单文件日志写入
     'single'      => false,
+    // error和sql日志单独记录
+    'apart_level'   =>  ['error','sql'],
+    'json'	=>	true,
     // 独立日志级别
     'apart_level' => [],
     // 最大日志文件数量
     'max_files'   => 0,
     // 是否关闭日志写入
-    'close'       => false,
+    'close'       => true,
 ];

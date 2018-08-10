@@ -159,11 +159,10 @@ class Base extends Model{
         if(!is_array($field))$field = explode(',',$field);
         $allowed_field_rs = array_diff($field, $allowed_field);
         // 差集数组为空，则说明通过
-        if(empty($allowed_field_rs)){
-            return $field;
-        }else{
+        if(!empty($allowed_field_rs)){
             error('NO_PERMISSIONS_FIELD');
         }
+        return $field;
     }
 
     /**
@@ -180,6 +179,18 @@ class Base extends Model{
             $alias = str_replace(config('database.prefix'),'',$this->table);
             $this->uid_condition = $alias.'.'.$this->uid_name.'='.$this->uid;
         }
+    }
+
+    /**
+     * 判断用户是否为当前操作用户
+     * @access public
+     * @param  int $pk 主键值
+     * @return bool
+     */
+    protected function checkUser($pk){
+        // 判断操作用户是否当前用户
+        $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->column($this->uid_name);
+        if(!$user) error('NO_ACCESS_ALLOWED');
     }
 
     /**
@@ -213,19 +224,6 @@ class Base extends Model{
     }
 
     /**
-     * 判断用户是否为当前操作用户
-     * @access public
-     * @param  mixed $data 
-     * @return bool
-     */
-    protected function checkUser($pk){
-        // 判断操作用户是否当前用户
-        $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->column($this->uid_name);
-        if(!$user) error('NO_ACCESS_ALLOWED');
-    }
-
-
-    /**
      * 验证token新增修改一条记录
      * @access public
      * @param  mixed $data 主键列表 支持闭包查询条件
@@ -253,7 +251,6 @@ class Base extends Model{
      */
     public function updateAll($datas)
     {
-        if(!is_array($datas)) return false;
         if($this->uid !== false){
             foreach($datas as $key=>$data){
                 if(array_key_exists($this->pk,$data)){
@@ -276,7 +273,6 @@ class Base extends Model{
     public function deleteAll($data)
     {
         $resultSet = $this->select($data);
-        
         if (count($resultSet) === 0){
             return false;
         }else{
@@ -285,7 +281,6 @@ class Base extends Model{
                 if($rs === false) return false;
             }
         }
-
         return true;
     }
 

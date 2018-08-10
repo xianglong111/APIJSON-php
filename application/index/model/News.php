@@ -21,7 +21,7 @@ class News extends BaseModel{
      */
     public $allowed_field = [
         'id',
-        'uid',
+        //'uid',
         'title',
         'description',
         'category',
@@ -39,7 +39,6 @@ class News extends BaseModel{
     public function NewsDetail()
     {
         return $this->hasOne('NewsDetail','news_id','id')
-                    //->bind('news_id')
                     ->setEagerlyType(0);
     }
 
