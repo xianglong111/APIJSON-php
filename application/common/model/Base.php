@@ -213,14 +213,14 @@ class Base extends Model{
      * @return array
      */
     public function findAll(){
-        return $this->field($this->allowed_field)
-                    ->with($this->with)
-                    ->where($this->where)
-                    ->where($this->uid_condition)
-                    ->page($this->page)
-                    ->limit($this->limit)
-                    ->order($this->order)
-                    ->select();
+        $model = $this->field($this->allowed_field);
+        if($this->with != '')           $model=call_user_func_array([$model,'with'],[$this->with]);
+        if($this->where != '')          $model=call_user_func_array([$model,'where'],[$this->where]);
+        if($this->uid_condition != '')  $model=call_user_func_array([$model,'where'],[$this->uid_condition]);
+        if($this->page != '')           $model=call_user_func_array([$model,'page'],[$this->page]);
+        if($this->limit != '')          $model=call_user_func_array([$model,'limit'],[$this->limit]);
+        if($this->order != '')          $model=call_user_func_array([$model,'order'],[$this->order]);
+        return $model->select();
     }
 
     /**

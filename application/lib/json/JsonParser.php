@@ -10,7 +10,35 @@
 namespace app\lib\json;
 class JsonParser{
     
-    private $ssl_methods = ['gets','posts'];
+    /**
+     * token验证的方法
+     * @var array
+     */
+    private $token_methods = ['gets','posts'];
+
+    /**
+     * 数组常量标识
+     * @var const
+     */
+    private const ARRAY_SIGN = '[]';
+
+    /**
+     * 方法常量标识
+     * @var const
+     */
+    private const METHOD_SIGN = '.';
+
+    /**
+     * 结果常量标识
+     * @var const
+     */
+    private const RESULT_SIGN = 'result';
+
+    /**
+     * 总数常量标识
+     * @var const
+     */
+    private const COUNT_SIGN = 'count';
 
     /**
      * Json数组对外解析器
@@ -27,12 +55,12 @@ class JsonParser{
             
             $table_name = $model_name;
             
-            $is_arr = strpos($model_name,'[]')!==false;
-            if( $is_arr ) $table_name  = str_replace('[]','',$table_name);
+            $is_arr = strpos($model_name,self::ARRAY_SIGN)!==false;
+            if( $is_arr ) $table_name  = str_replace(self::ARRAY_SIGN,'',$table_name);
             
-            $is_fun = strpos($model_name,'.')!==false;
+            $is_fun = strpos($model_name,self::METHOD_SIGN)!==false;
             $action_name = '';
-            if( $is_fun ) list($table_name,$action_name) = explode('.',$table_name);
+            if( $is_fun ) list($table_name,$action_name) = explode(self::METHOD_SIGN,$table_name);
             
             // 实例化模型
             $model = model($table_name);
@@ -43,18 +71,21 @@ class JsonParser{
             if( $is_fun ) {
                 $data[$model_name] = $model->exeFun($action_name,$model_arr);
             }else{
-                if(in_array($table_name,config('model.no_access_allowed'))) error('NO_ACCESS_ALLOWED');
+                $no_access_allowed = config('model.no_access_allowed');
+                if(in_array($table_name,$no_access_allowed)) error('NO_ACCESS_ALLOWED');
 
-                if(in_array($handle_type,$this->ssl_methods)){
+                if(in_array($handle_type,$this->token_methods)){
                     $model->setUidCondition();
                     $handle_type = substr($handle_type, 0, -1);
                 }
-                $data[$model_name]['result'] = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
+                $result = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
                 if($handle_type == 'get'){
-                    $data[$model_name] = $data[$model_name]['result'];
-                    if($is_arr && array_key_exists('count',$model_arr)){
-                        $data[$table_name.'.count'] = $this->count($model);
+                    $data[$model_name] = $result;
+                    if($is_arr && array_key_exists(self::COUNT_SIGN,$model_arr)){
+                        $data[$table_name.'.'.self::COUNT_SIGN] = $this->count($model);
                     }
+                }else{
+                    $data[$model_name][self::RESULT_SIGN] = $result;
                 }
             }
         }
@@ -64,7 +95,7 @@ class JsonParser{
     /**
      * 获取数据
      * @access public
-     * @param  model $model 对象模型
+     * @param  model $model 模型对象
      * @param  array $model_arr 模型数据
      * @param  bool  $is_arr
      * @return array 
@@ -75,7 +106,7 @@ class JsonParser{
     /**
      * 新增修改数据
      * @access public
-     * @param  model $model 对象模型
+     * @param  model $model 模型对象
      * @param  array $model_arr 模型数据
      * @param  bool  $is_arr
      * @return array
@@ -86,7 +117,7 @@ class JsonParser{
     /**
      * 删除数据
      * @access public
-     * @param  model $model 对象模型
+     * @param  model $model 模型对象
      * @param  array $model_arr 模型数据
      * @param  bool  $is_arr 是否为数组
      * @return array
@@ -97,7 +128,7 @@ class JsonParser{
     /**
      * 获取数据总数
      * @access public
-     * @param  model $model 对象模型
+     * @param  model $model 模型对象
      * @return array
      */
     private function count($model){

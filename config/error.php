@@ -27,7 +27,7 @@ return [
 
     'LOGIN_TIMEOUT' => [
         'code'=>4,
-        'msg' =>'没有相关权限或超时，请您重新登录！',
+        'msg' =>'登录超时，请您重新登录！',
         'msg_en'=>'No access is allowed or login timeout'
     ],
 
@@ -40,7 +40,7 @@ return [
     /**
      * 用户错误提示信息
      * 300开始
-      */
+     */
     'DUPLICATE_LOGIN' => [
         'code'=>300,
         'msg' =>'重复登录',
