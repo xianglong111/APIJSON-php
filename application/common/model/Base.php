@@ -11,47 +11,20 @@ namespace app\common\model;
 use think\Model;
 
 class Base extends Model{
+
     /**
-     * 允许访问字段
+     * 查询条件
      * @var array
      */
-    protected $allowed_field = [];
-
-    /**
-     * 条件语句，where
-     * @var string
-     */
-    protected $where = '';
-
-    /**
-     * 数据分页
-     * @var string
-     */
-    protected $page = '';
-
-    /**
-     * 数据条数,默认十条数据
-     * @var int
-     */
-    protected $count = 10;
-
-    /**
-     * 数据条数,默认十条数据
-     * @var int
-     */
-    protected $limit = 10;
-
-    /**
-     * 排序
-     * @var string
-     */
-    protected $order = '';
-
-    /**
-     * 关联模型
-     * @var string
-     */
-    protected $with = [];
+    protected $sql_condition = [
+        'field' => '',
+        'where' => '',
+        'page'  => '',
+        'count' => '',
+        'limit' => 10,
+        'order' => '',
+        'with'  => []
+    ];
 
     /**
      * uid字段名
@@ -95,7 +68,6 @@ class Base extends Model{
                 }
             }
         }
-        // 验证参数
         $this->checkParams($model_arr);
         return $model_arr;
     }
@@ -106,44 +78,34 @@ class Base extends Model{
      * @param  array|object $model_arr 模型数组，包含（table、field、page、count等）
      */
     protected function checkParams($model_arr){
-
         if(empty($model_arr)) return [];
-
-        // 检测查询字段是否有权限
-        if(array_key_exists('field',$model_arr)){
-            $this->allowed_field = $this->checkFieldAllowed($model_arr['field'], $this->allowed_field); 
-        }
-
-        // 条件语句
-        if(array_key_exists('where',$model_arr))$this->where = $model_arr['where'];
-
-        // 分页
-        if(array_key_exists('page',$model_arr))$this->page   = $model_arr['page'];
-
-        // 限制条数
-        if(array_key_exists('limit',$model_arr)){
-            $this->limit = $model_arr['limit'];
-        }
-
-        // 获取总数
-        if(array_key_exists('count',$model_arr))$this->count = $model_arr['count'];
-        
-        // 排序
-        if(array_key_exists('order',$model_arr))$this->order  = $model_arr['order'];
-
-        // 关联模型
-        if(array_key_exists('with',$model_arr)){
-            if(is_array($model_arr['with'])){
-                $this->with = [];
-                foreach($model_arr['with'] as $model_name=>$field){
-                    // 检测字段是否有权限
-                    $model = model($model_name);
-                    $field = $this->checkFieldAllowed($field,$model->allowed_field);
-                    $this->with[$model_name] = function($query) use ($field,$model_name){
-                        $query->withField($field);
-                    };
+        foreach($this->sql_condition as $field=>$condition){
+            if(array_key_exists($field,$model_arr)){
+                if($field == 'field'){
+                    $this->handleField($model_arr[$field]); 
+                }elseif($field == 'with'){
+                    $this->handleWith($model_arr[$field]);
+                }else{
+                    $this->sql_condition[$field] = $model_arr[$field];
                 }
             }
+        }
+    }
+
+    /**
+     * 处理关联模型
+     * @access protected
+     * @param  array   $with 关联模型的值
+     * @return
+     */
+    private function handleWith($with){
+        if(empty($with)) return [];
+        foreach($with as $model_name=>$field){
+            $model = model($model_name);
+            $field = $this->checkFieldAllowed($field,$model->allowed_field);
+            $this->sql_condition['with'][$model_name] = function($query) use ($field,$model_name){
+                $query->withField($field);
+            };
         }
     }
 
@@ -154,15 +116,17 @@ class Base extends Model{
      * @param array   $allowed_field 允许字段列表
      * @return
      */
-    protected function checkFieldAllowed($field,$allowed_field){
-        if($field == '')return $allowed_field;
-        if(!is_array($field))$field = explode(',',$field);
-        $allowed_field_rs = array_diff($field, $allowed_field);
-        // 差集数组为空，则说明通过
-        if(!empty($allowed_field_rs)){
-            error('NO_PERMISSIONS_FIELD');
+    protected function handleField($field){
+        if($field == ''){
+            $field = $this->allowed_field;
         }
-        return $field;
+        if(!is_array($field)){
+            $field = explode(',',$field);
+        }           
+        if(!empty(array_diff($field, $this->allowed_field))){
+            error('NO_PERMISSIONS_FIELD');
+        }       
+        $this->sql_condition['field'] = $field;
     }
 
     /**
@@ -188,9 +152,23 @@ class Base extends Model{
      * @return bool
      */
     protected function checkUser($pk){
-        // 判断操作用户是否当前用户
         $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->column($this->uid_name);
         if(!$user) error('NO_ACCESS_ALLOWED');
+    }
+
+    /**
+     * 模型条件SQL
+     * @access public
+     * @return array
+     */
+    protected function getModel(){
+        $model = $this->field($this->sql_condition['field']);
+        foreach($this->sql_condition as $field=>$condition){
+            if($field != 'field' && $condition != ''){
+                $model = call_user_func_array([$model,$field],[$this->sql_condition[$field]]);
+            }
+        }
+        return $model;
     }
 
     /**
@@ -199,12 +177,7 @@ class Base extends Model{
      * @return array
      */
     public function findOne(){
-        return $this->field($this->allowed_field)
-                        ->with($this->with)
-                        ->where($this->where)
-                        ->where($this->uid_condition)
-                        ->order($this->order)
-                        ->find();
+        return $this->getModel()->find();
     }
 
     /**
@@ -213,14 +186,7 @@ class Base extends Model{
      * @return array
      */
     public function findAll(){
-        $model = $this->field($this->allowed_field);
-        if($this->with != '')           $model=call_user_func_array([$model,'with'],[$this->with]);
-        if($this->where != '')          $model=call_user_func_array([$model,'where'],[$this->where]);
-        if($this->uid_condition != '')  $model=call_user_func_array([$model,'where'],[$this->uid_condition]);
-        if($this->page != '')           $model=call_user_func_array([$model,'page'],[$this->page]);
-        if($this->limit != '')          $model=call_user_func_array([$model,'limit'],[$this->limit]);
-        if($this->order != '')          $model=call_user_func_array([$model,'order'],[$this->order]);
-        return $model->select();
+        return $this->getModel()->select();
     }
 
     /**
@@ -233,7 +199,6 @@ class Base extends Model{
     {
         $is_update = array_key_exists($this->pk,$data);
         if($this->uid !== false){
-            // 判断为新增还是修改
             if($is_update){
                 $this->checkUser($data[$this->pk]);
             }else{
@@ -290,14 +255,11 @@ class Base extends Model{
      * @return int
      */
     public function getCount(){
-        return $this->with($this->with)
-                    ->where($this->where)
-                    ->where($this->uid_condition)
-                    ->count($this->count);
+        return $this->getModel()->count($this->count);
     }
 
     /**
-     * 执行模型方法
+     * 执行自定义模型方法
      * @access public
      * @param  string
      * @param  array
