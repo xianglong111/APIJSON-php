@@ -102,7 +102,8 @@ class Base extends Model{
         if(empty($with)) return [];
         foreach($with as $model_name=>$field){
             $model = model($model_name);
-            $field = $this->checkFieldAllowed($field,$model->allowed_field);
+            $this->handleField($field,$model->allowed_field);
+            $field = $this->sql_condition['field'];
             $this->sql_condition['with'][$model_name] = function($query) use ($field,$model_name){
                 $query->withField($field);
             };
