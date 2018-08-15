@@ -69,7 +69,7 @@ class JsonParser{
 
             // 执行自定义方法
             if( $is_fun ) {
-                $data[$model_name] = $model->exeFun($action_name,$model_arr);
+                $data = $model->exeFun($action_name,$model_arr);
             }else{
                 $no_access_allowed = config('model.no_access_allowed');
                 if(in_array($table_name,$no_access_allowed)) error('NO_ACCESS_ALLOWED');
