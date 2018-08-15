@@ -30,10 +30,16 @@ class Base extends Model{
      * uid字段名
      * @var string
      */
+    private $count;
+
+    /**
+     * uid字段名
+     * @var string
+     */
     protected $uid_name = 'uid';
     
     /**
-     * uid字段名
+     * uid
      * @var mixed
      */
     protected $uid = false;
@@ -50,12 +56,14 @@ class Base extends Model{
      * @param  array|object $data 数据
      */
     public function initData($model_field){
+        // 设置默认字段
+        $this->sql_condition['field'] = $this->allowed_field;
+        
         $model_arr = [];
         if(is_array($model_field)){
             foreach ($model_field as $model_child_name => $model_child) {
                 // 批量新增和修改的操作
                 if($model_child_name === 0) return $model_field;
-
                 // 是否为字段，判断标准为是否为数组
                 $is_field = !is_array($model_field[$model_child_name]);
                 if($is_field){
@@ -85,11 +93,25 @@ class Base extends Model{
                     $this->handleField($model_arr[$field]); 
                 }elseif($field == 'with'){
                     $this->handleWith($model_arr[$field]);
+                }elseif($field == 'count'){
+                    $this->handleCount($model_arr[$field]);
                 }else{
                     $this->sql_condition[$field] = $model_arr[$field];
                 }
             }
         }
+    }
+
+    /**
+     * 处理总数查询
+     * @access protected
+     * @param  array   $with 关联模型的值
+     * @return
+     */
+    private function handleCount($count){
+        unset($this->sql_condition['count']);
+        if(empty($count)) return false;
+        $this->count = $count;
     }
 
     /**
