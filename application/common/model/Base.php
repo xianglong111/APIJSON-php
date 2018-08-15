@@ -101,9 +101,7 @@ class Base extends Model{
     private function handleWith($with){
         if(empty($with)) return [];
         foreach($with as $model_name=>$field){
-            $model = model($model_name);
-            $this->handleField($field,$model->allowed_field);
-            $field = $this->sql_condition['field'];
+            $field = $this->handleField($field,model($model_name)->allowed_field);
             $this->sql_condition['with'][$model_name] = function($query) use ($field,$model_name){
                 $query->withField($field);
             };
@@ -128,6 +126,7 @@ class Base extends Model{
             error('NO_PERMISSIONS_FIELD');
         }       
         $this->sql_condition['field'] = $field;
+        return $field;
     }
 
     /**
