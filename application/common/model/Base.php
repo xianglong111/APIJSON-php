@@ -101,11 +101,22 @@ class Base extends Model{
     private function handleWith($with){
         if(empty($with)) return [];
         foreach($with as $model_name=>$field){
-            $field = $this->handleField($field,model($model_name)->allowed_field);
+            $model = model($model_name);
+            $field = $this->checkFieldAllowed($field,$model->allowed_field);
             $this->sql_condition['with'][$model_name] = function($query) use ($field,$model_name){
                 $query->withField($field);
             };
         }
+    }
+
+    /**
+     * 处理字段函数
+     * @access protected
+     * @param  array   $field 当前字段列表
+     * @return
+     */
+    protected function handleField($field){
+        $this->sql_condition['field'] = $this->checkFieldAllowed($field,$this->allowed_field);
     }
 
     /**
@@ -115,17 +126,16 @@ class Base extends Model{
      * @param array   $allowed_field 允许字段列表
      * @return
      */
-    protected function handleField($field){
+    private function checkFieldAllowed($field,$allowed_field){
         if($field == ''){
-            $field = $this->allowed_field;
+            $field = $allowed_field;
         }
         if(!is_array($field)){
             $field = explode(',',$field);
         }           
-        if(!empty(array_diff($field, $this->allowed_field))){
+        if(!empty(array_diff($field, $allowed_field))){
             error('NO_PERMISSIONS_FIELD');
         }       
-        $this->sql_condition['field'] = $field;
         return $field;
     }
 
