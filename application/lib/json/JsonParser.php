@@ -35,10 +35,16 @@ class JsonParser{
     private const RESULT_SIGN = 'result';
 
     /**
-     * 总数常量标识
+     * 聚合函数
      * @var const
      */
-    private const COUNT_SIGN = 'count';
+    private $ploy_function = [
+        'count',
+        'sum',
+        'max',
+        'min',
+        'avg'
+    ];
 
     /**
      * 求和
@@ -88,11 +94,13 @@ class JsonParser{
                 $result = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
                 if($handle_type == 'get'){
                     $data[$model_name] = $result;
-                    if($is_arr && array_key_exists(self::COUNT_SIGN,$model_arr)){
-                        $data[$table_name.'.'.self::COUNT_SIGN] = $model->getCount();
-                    }
-                    if($is_arr && array_key_exists(self::SUM_SIGN,$model_arr)){
-                        $data[$table_name.'.'.self::SUM_SIGN] = $model->getSum();
+                    if($is_arr){
+                        // 聚合函数
+                        foreach($this->ploy_function as $ploy){
+                            if(array_key_exists($ploy,$model_arr)){
+                                $data[$table_name.'.'.$ploy] = $model->getPloy($ploy);
+                            }
+                        }
                     }
                 }else{
                     $data[$model_name][self::RESULT_SIGN] = $result;

@@ -23,9 +23,7 @@ class Base extends Model{
         'limit' => 10,
         'order' => '',
         'group' => '',
-        'with'  => [],
-        'count' => '',
-        'sum'   => '',
+        'with'  => []
     ];
 
     /**
@@ -51,6 +49,18 @@ class Base extends Model{
      * @var string
      */
     protected $uid_condition = '';
+
+    /**
+     * 聚合函数
+     * @var const
+     */
+    private $ploy_function = [
+        'count'=>'',
+        'sum'=>'',
+        'max'=>'',
+        'min'=>'',
+        'avg'=>''
+    ];
 
     /**
      * 初始化数据
@@ -89,40 +99,21 @@ class Base extends Model{
      */
     protected function checkParams($model_arr){
         if(empty($model_arr)) return [];
-        foreach($this->sql_condition as $field=>$condition){
-            if(array_key_exists($field,$model_arr)){
-                $method_name = 'handle'.ucfirst($field);
+
+        foreach($model_arr as $key=>$value){
+            if(array_key_exists($key,$this->sql_condition)){
+                $method_name = 'handle'.ucfirst($key);
                 if(method_exists($this,$method_name)){
-                    call_user_func_array([$this,$method_name],[$model_arr[$field]]);
+                    call_user_func_array([$this,$method_name],[$value]);
                 }else{
-                    $this->sql_condition[$field] = $model_arr[$field];
+                    $this->sql_condition[$key] = $value;
+                }
+            }elseif(array_key_exists($key,$this->ploy_function)){
+                if(!empty($value)){
+                    $this->ploy_function[$key] = $value;
                 }
             }
         }
-    }
-
-    /**
-     * 处理求和
-     * @access protected
-     * @param  array   $sum
-     * @return
-     */
-    private function handleSum($sum){
-        unset($this->sql_condition['sum']);
-        if(empty($sum)) return false;
-        $this->sum = $sum;
-    }
-
-    /**
-     * 处理总数查询
-     * @access protected
-     * @param  array   $with 关联模型的值
-     * @return
-     */
-    private function handleCount($count){
-        unset($this->sql_condition['count']);
-        if(empty($count)) return false;
-        $this->count = $count;
     }
 
     /**
@@ -293,21 +284,13 @@ class Base extends Model{
     }
 
     /**
-     * 获取总数量
+     * 获取聚合函数数据
      * @access public
      * @return int
      */
-    public function getCount(){
-        return $this->getModel()->count($this->count);
-    }
-
-    /**
-     * 获取求和
-     * @access public
-     * @return int
-     */
-    public function getSum(){
-        return $this->getModel()->sum($this->sum);
+    public function getPloy($ploy){
+        $model = $this->getModel();
+        return call_user_func_array([$model,$ploy],[$this->ploy_function[$ploy]]);
     }
 
     /**
