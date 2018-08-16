@@ -41,6 +41,12 @@ class JsonParser{
     private const COUNT_SIGN = 'count';
 
     /**
+     * 求和
+     * @var const
+     */
+    private const SUM_SIGN = 'sum';
+
+    /**
      * Json数组对外解析器
      * @access public
      * @param  string $json_arr JSON数据
@@ -83,7 +89,10 @@ class JsonParser{
                 if($handle_type == 'get'){
                     $data[$model_name] = $result;
                     if($is_arr && array_key_exists(self::COUNT_SIGN,$model_arr)){
-                        $data[$table_name.'.'.self::COUNT_SIGN] = $this->count($model);
+                        $data[$table_name.'.'.self::COUNT_SIGN] = $model->getCount();
+                    }
+                    if($is_arr && array_key_exists(self::SUM_SIGN,$model_arr)){
+                        $data[$table_name.'.'.self::SUM_SIGN] = $model->getSum();
                     }
                 }else{
                     $data[$model_name][self::RESULT_SIGN] = $result;

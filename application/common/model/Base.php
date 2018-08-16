@@ -20,10 +20,12 @@ class Base extends Model{
         'field' => '',
         'where' => '',
         'page'  => '',
-        'count' => '',
         'limit' => 10,
         'order' => '',
-        'with'  => []
+        'group' => '',
+        'with'  => [],
+        'count' => '',
+        'sum'   => '',
     ];
 
     /**
@@ -89,17 +91,26 @@ class Base extends Model{
         if(empty($model_arr)) return [];
         foreach($this->sql_condition as $field=>$condition){
             if(array_key_exists($field,$model_arr)){
-                if($field == 'field'){
-                    $this->handleField($model_arr[$field]); 
-                }elseif($field == 'with'){
-                    $this->handleWith($model_arr[$field]);
-                }elseif($field == 'count'){
-                    $this->handleCount($model_arr[$field]);
+                $method_name = 'handle'.ucfirst($field);
+                if(method_exists($this,$method_name)){
+                    call_user_func_array([$this,$method_name],[$model_arr[$field]]);
                 }else{
                     $this->sql_condition[$field] = $model_arr[$field];
                 }
             }
         }
+    }
+
+    /**
+     * 处理求和
+     * @access protected
+     * @param  array   $sum
+     * @return
+     */
+    private function handleSum($sum){
+        unset($this->sql_condition['sum']);
+        if(empty($sum)) return false;
+        $this->sum = $sum;
     }
 
     /**
@@ -132,7 +143,7 @@ class Base extends Model{
     }
 
     /**
-     * 处理字段函数
+     * 处理字段方法
      * @access protected
      * @param  array   $field 当前字段列表
      * @return
@@ -184,7 +195,7 @@ class Base extends Model{
      * @return bool
      */
     protected function checkUser($pk){
-        $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->column($this->uid_name);
+        $user = $this->where($this->uid_name,$this->uid)->where($this->pk,$pk)->value($this->uid_name);
         if(!$user) error('NO_ACCESS_ALLOWED');
     }
 
@@ -288,6 +299,15 @@ class Base extends Model{
      */
     public function getCount(){
         return $this->getModel()->count($this->count);
+    }
+
+    /**
+     * 获取求和
+     * @access public
+     * @return int
+     */
+    public function getSum(){
+        return $this->getModel()->sum($this->sum);
     }
 
     /**
