@@ -83,28 +83,28 @@ class JsonParser{
             if( $is_fun ) {
                 $data = $model->exeFun($action_name,$model_arr);
                 break;
-            }else{
-                $no_access_allowed = config('model.no_access_allowed');
-                if(in_array($table_name,$no_access_allowed)) error('NO_ACCESS_ALLOWED');
+            }
+            
+            $no_access_allowed = config('model.no_access_allowed');
+            if(in_array($table_name,$no_access_allowed)) error('NO_ACCESS_ALLOWED');
 
-                if(in_array($handle_type,$this->token_methods)){
-                    $model->setUidCondition();
-                    $handle_type = substr($handle_type, 0, -1);
-                }
-                $result = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
-                if($handle_type == 'get'){
-                    $data[$model_name] = $result;
-                    if($is_arr){
-                        // 聚合函数
-                        foreach($this->ploy_function as $ploy){
-                            if(array_key_exists($ploy,$model_arr)){
-                                $data[$table_name.'.'.$ploy] = $model->getPloy($ploy);
-                            }
+            if(in_array($handle_type,$this->token_methods)){
+                $model->setUidCondition();
+                $handle_type = substr($handle_type, 0, -1);
+            }
+            $result = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
+            if($handle_type == 'get'){
+                $data[$model_name] = $result;
+                if($is_arr){
+                    // 聚合函数
+                    foreach($this->ploy_function as $ploy){
+                        if(array_key_exists($ploy,$model_arr)){
+                            $data[$table_name.'.'.$ploy] = $model->getPloy($ploy);
                         }
                     }
-                }else{
-                    $data[$model_name][self::RESULT_SIGN] = $result;
                 }
+            }else{
+                $data[$model_name][self::RESULT_SIGN] = $result;
             }
         }
         return $data;
@@ -143,17 +143,6 @@ class JsonParser{
     private function delete($model,$model_arr,$is_arr){
         return $model->deleteAll(reset($model_arr)) !== false;
     }
-    /**
-     * 获取数据总数
-     * @access public
-     * @param  model $model 模型对象
-     * @return array
-     */
-    private function count($model){
-        return $model->getCount();
-    }
-
-
 }
 
 
