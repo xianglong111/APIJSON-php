@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | JNAPI [ Jinaong Api Docment ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2018 http://jianong.com All rights reserved.
+// | Copyright (c) 2018  All rights reserved.
 // +----------------------------------------------------------------------
 // | Author: 欧阳 <xianglong111@126.com>
 // +----------------------------------------------------------------------
@@ -52,6 +52,7 @@ class JsonParser{
      */
     private const SUM_SIGN = 'sum';
 
+
     /**
      * Json数组对外解析器
      * @access public
@@ -92,7 +93,20 @@ class JsonParser{
                 $model->setUidCondition();
                 $handle_type = substr($handle_type, 0, -1);
             }
-            $result = call_user_func_array([$this,$handle_type],[$model,$model_arr,$is_arr]);
+
+            // 执行获取结果集
+            switch($handle_type){
+                case 'get':
+                    $result = $is_arr?$model->findAll():$model->findOne();
+                    break;
+                case 'post':
+                    $result = $is_arr?$model->updateAll($model_arr):$model->updateOne($model_arr);
+                    break;
+                case 'delete':
+                    $result = $model->deleteAll(reset($model_arr)) !== false;
+                    break;
+            }
+
             if($handle_type == 'get'){
                 $data[$model_name] = $result;
                 if($is_arr){
@@ -110,39 +124,6 @@ class JsonParser{
         return $data;
     }
 
-    /**
-     * 获取数据
-     * @access public
-     * @param  model $model 模型对象
-     * @param  array $model_arr 模型数据
-     * @param  bool  $is_arr
-     * @return array 
-     */
-    private function get($model,$model_arr,$is_arr){
-        return $is_arr?$model->findAll():$model->findOne();
-    }
-    /**
-     * 新增修改数据
-     * @access public
-     * @param  model $model 模型对象
-     * @param  array $model_arr 模型数据
-     * @param  bool  $is_arr
-     * @return array
-     */
-    private function post($model,$model_arr,$is_arr){
-        return $is_arr?$model->updateAll($model_arr):$model->updateOne($model_arr);
-    }
-    /**
-     * 删除数据
-     * @access public
-     * @param  model $model 模型对象
-     * @param  array $model_arr 模型数据
-     * @param  bool  $is_arr 是否为数组
-     * @return array
-     */
-    private function delete($model,$model_arr,$is_arr){
-        return $model->deleteAll(reset($model_arr)) !== false;
-    }
 }
 
 

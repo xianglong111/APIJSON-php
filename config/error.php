@@ -15,7 +15,7 @@ return [
 
     'MISSING_PARAMET' => [
         'code'=>2,
-        'msg' =>'缺少必要的参数',
+        'msg' =>'缺少必须的参数',
         'msg_en'=>'Missing the necessary parameters'
     ],
 

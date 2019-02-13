@@ -1,12 +1,19 @@
 <?php
+// +----------------------------------------------------------------------
+// | JNAPI [ Jinaong Api Docment ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2018 All rights reserved.
+// +----------------------------------------------------------------------
+// | Author: 欧阳 <xianglong111@126.com>
+// +----------------------------------------------------------------------
 
 namespace app\lib\exception;
-
 use think\exception\Handle;
 use think\Log;
 use think\Request;
 use Exception;
 use think\Db;
+
 /*
  * 重写Handle的render方法，实现自定义异常消息
  */
@@ -29,7 +36,7 @@ class ExceptionHandler extends Handle
         
         $result = [
             'msg'  => $this->msg,
-            'retcode' => $this->errorCode
+            'error_code' => $this->errorCode
         ];
         if(config('app_debug')){
             // 调试状态下需要显示TP默认的异常页面，因为TP的默认页面
