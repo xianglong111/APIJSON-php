@@ -1,4 +1,4 @@
-# PHP JSON-API
+# PHP APIJSON
 [![PHP API](https://img.shields.io/badge/php-7.0%2B-brightgreen.svg?style=flat)](https://github.com/topics/php)
 [![PHP API](https://img.shields.io/badge/thinkphp-5.1.0%2B-jekyll.svg?style=flat)](https://github.com/top-think/framework)
 [![MySQL API](https://img.shields.io/badge/MySQL-5.5%2B-brightgreen.svg?style=flat)](https://github.com/topics/mysql) 
